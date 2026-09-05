@@ -1,10 +1,12 @@
 # Wayfare
 
-An agent that discovers services it has never seen before, pays for them per call on
-Hedera testnet via x402, and leaves a verifiable receipt trail.
+Every agentic-payments demo hardcodes its endpoints — the agent already knows every
+seller, which means there's no actual market. Wayfare's agent starts with a task and a
+budget, not a list of tools: it resolves providers at runtime over ENS, picks between
+them on price and quality, pays per call on Hedera testnet via x402, and anchors a
+receipt to HCS for every provider it ever deals with.
 
-Full requirements: see the project spec shared at kickoff (architecture, milestones,
-sponsor mapping, risks). This README tracks what's actually built.
+This README tracks what's actually built, not what's planned.
 
 ## Status
 
