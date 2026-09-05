@@ -1,0 +1,9 @@
+{
+  "name": "@wayfare/receipts",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "echo 'not yet built — see M6 in requirements' && exit 1"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "@wayfare/web",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "echo 'not yet built — see M7 in requirements' && exit 1"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "@wayfare/provider-niche",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "echo 'not yet built — see M4 in requirements' && exit 1"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "wayfare",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "apps/providers/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:agent": "npm run dev -w @wayfare/agent",
+    "dev:swift": "npm run dev -w @wayfare/provider-swift",
+    "dev:deep": "npm run dev -w @wayfare/provider-deep",
+    "dev:niche": "npm run dev -w @wayfare/provider-niche"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
