@@ -8,9 +8,8 @@ sponsor mapping, risks). This README tracks what's actually built.
 
 ## Status
 
-- [x] Repo scaffolded (this commit)
-- [ ] **M1 — one paid call.** Code is written (`apps/agent`, `apps/providers/swift`) but
-      not yet run end-to-end — needs a funded Hedera testnet account (see below).
+- [x] M1 — one paid call. Settled for real on Hedera testnet via Blocky402:
+      https://hashscan.io/testnet/transaction/0.0.7162784-1788608829-232641440
 - [ ] M2 — M9: not started
 
 ## Layout
