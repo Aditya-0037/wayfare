@@ -45,7 +45,15 @@ async function main() {
   const signer = createClientHederaSigner(config.payerAccountId, PrivateKey.fromStringECDSA(config.payerPrivateKey), {
     network: "hedera:testnet",
   });
-  const client = new x402Client().register("hedera:*", new ExactHederaScheme(signer));
+  const client = x402Client.fromConfig({
+    schemes: [{ network: "hedera:*", client: new ExactHederaScheme(signer) }],
+    spendControls: {
+      // Our own Budget guardrails (MAX_TOTAL_TINYBARS / MAX_PRICE_PER_CALL_TINYBARS / MAX_CALLS)
+      // already enforce the actual numeric limits above, before this client is ever asked to pay.
+      // This just scopes the SDK's own default $1-cap USD spend control to the one asset we expect.
+      allowedAssets: [{ network: "hedera:testnet", asset: "0.0.0", maxAmountPerPayment: String(config.maxPricePerCallTinybars) }],
+    },
+  });
   const fetchWithPayment = wrapFetchWithPayment(fetch, client);
 
   console.log("[agent] paying via x402/Blocky402 and calling /v1/execute ...");
