@@ -1,0 +1,21 @@
+{
+  "name": "@wayfare/agent",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "create-merchant-account": "tsx scripts/create-merchant-account.ts"
+  },
+  "dependencies": {
+    "@x402/core": "2.25.0",
+    "@x402/fetch": "2.25.0",
+    "@x402/hedera": "2.25.0",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
