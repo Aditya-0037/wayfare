@@ -10,7 +10,9 @@
     "setup-provider": "tsx scripts/setup-provider.ts",
     "resolve": "tsx scripts/resolve-provider.ts",
     "discover": "tsx scripts/discover-providers.ts",
-    "verify-eac": "tsx scripts/verify-eac.ts"
+    "verify-eac": "tsx scripts/verify-eac.ts",
+    "read-reputation": "tsx scripts/read-reputation.ts",
+    "fund-recorder": "tsx scripts/fund-recorder.ts"
   },
   "dependencies": {
     "@ensdomains/ensjs": "5.0.0-sepolia-fix.1",
