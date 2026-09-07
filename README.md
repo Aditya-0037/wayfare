@@ -29,7 +29,9 @@ This README tracks what's actually built, not what's planned.
       drain the reserve, refuses before ever calling `fetchWithPayment` — never after.
 - [x] Bonus — HCS-14 agent identity. The agent and each provider have a deterministic,
       independently-verifiable identity anchored to HCS — see `packages/receipts/README.md`.
-- [ ] M5, M7, M9: not started
+- [x] M7 — frontend. Landing page plus a live console (Roster / Reasoning / Ledger) driven
+      entirely by the agent's WebSocket event stream — see `apps/web/README.md`.
+- [ ] M5, M9: not started
 
 ## Layout
 

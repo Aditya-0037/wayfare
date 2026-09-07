@@ -1,32 +1,20 @@
-# web (not yet built)
+# web
 
-Planned for M7 (Frontend). Three panes — Roster, Reasoning, Ledger. Server-authoritative
-state throughout: never compute budget or timing in the browser, only render what the
-server sends.
+React + Vite + Tailwind. A landing page plus a live console that talks to the agent's
+WebSocket server — three panes (Roster, Reasoning, Ledger), server-authoritative
+throughout: the browser only renders `AgentEvent`s (`apps/agent/src/events.ts`), it never
+computes budget, timing, or the decision itself.
 
-## The WebSocket contract (already live)
+## Running it
 
-`apps/agent` runs a WebSocket server (`npm run serve` from `apps/agent`, default
-`ws://localhost:4000`). Connect, send one message to kick off a run:
+1. Start the agent's WebSocket server: from `apps/agent`, `npm run serve` (needs the
+   Hedera env vars — see the root README).
+2. Start the three providers (`npm run dev:swift` / `dev:deep` / `dev:niche` from repo root).
+3. `npm run dev -w @wayfare/web` (or `cd apps/web && npm run dev`) — serves on
+   `http://localhost:5173`.
+4. Optional: copy `.env.example` → `.env` to point `VITE_WS_URL` somewhere other than
+   `ws://localhost:4000`.
 
-```json
-{ "type": "run", "text": "some text to summarize" }
-```
-
-Every connected client then receives the same event stream in real time. Event shapes are
-defined in `apps/agent/src/events.ts` (`AgentEvent`) — treat that file as the source of
-truth, this list is just a summary:
-
-- `run_started` — text, and the run's budget limits
-- `provider_discovered` — one per provider found via ENS (→ Roster)
-- `quote_received` / `quote_declined` — per provider, with the reason if declined (→ Roster, Reasoning)
-- `decision_made` — which provider was chosen and why, full reasoning trail (→ Reasoning)
-- `run_refused` — no affordable candidate, or a guardrail tripped, before any payment (→ Reasoning, Ledger)
-- `payment_settled` — amount, tx id, ready-made HashScan URL (→ Ledger)
-- `result_delivered` — the provider's actual output
-- `receipt_recorded` — HCS topic id, sequence number, ready-made Mirror Node URL (→ Ledger)
-- `budget_updated` — running totals (→ Ledger)
-- `run_complete` — success/failure, end of the run
-
-Try it now with `apps/agent/scripts/ws-test-client.ts` (`npx tsx scripts/ws-test-client.ts
-ws://localhost:4000 "some text"`) to see the exact JSON before building any UI against it.
+Open the page, scroll to "Run it yourself", connect, and submit text. Try the markdown-list
+sample to see `niche` accept it and the plain-paragraph sample to see it decline (422)
+before any payment.
