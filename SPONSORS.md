@@ -124,5 +124,8 @@ so this one genuinely needs the dashboard's Recipes tab by hand. This is what bo
 remaining prizes need: a Recipe combining one of the three gateways above with an
 already-listed one (PurpleAir or Api Ninjas were seen live on the platform).
 
-**Status:** all three gateways live (satisfies "Agentify a New API"'s gateway requirement).
-Recipe not yet built — the one piece left for both eligible Bazantic prizes.
+**Status:** all three gateways registered against real, live provider URLs (satisfies
+"Agentify a New API"'s gateway requirement on the letter — deploy a Gateway for a
+previously-unavailable API). They're not yet *callable* through Bazantic's own routing —
+see the draft/active finding above. Recipe not yet built — the one piece left for both
+eligible Bazantic prizes.
