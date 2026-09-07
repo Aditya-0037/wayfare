@@ -6,10 +6,13 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "scripts": {
-    "create-topic": "tsx scripts/create-topic.ts"
+    "create-topic": "tsx scripts/create-topic.ts",
+    "create-identity-topic": "tsx scripts/create-identity-topic.ts",
+    "publish-identities": "tsx scripts/publish-identities.ts"
   },
   "dependencies": {
     "@hiero-ledger/sdk": "2.85.0",
+    "@wayfare/identity": "*",
     "dotenv": "^16.4.5"
   },
   "devDependencies": {

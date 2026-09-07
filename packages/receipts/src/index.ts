@@ -2,6 +2,8 @@ import { createHash } from "node:crypto";
 import { TopicMessageSubmitTransaction, TopicId } from "@hiero-ledger/sdk";
 import { hederaClient, topicId } from "./client.js";
 
+export { publishAgentIdentity, type PublishedIdentity } from "./identity.js";
+
 export interface Receipt {
   providerName: string; // e.g. "swift.wayfare.eth"
   quoteId: string;
