@@ -68,8 +68,9 @@ Task domain for the three providers: text summarization.
 - Records follow [ENSIP-26](https://discuss.ens.domains/t/ensip-26-ens-native-ai-identity/21968):
   `agent-context` (free text describing the provider), `agent-endpoint[web]`, and a custom
   `wayfare.reputation` record that only a separate settlement-recorder key can write —
-  enforced by Enhanced Access Control, not just convention. Details and setup scripts in
-  `packages/identity/README.md`.
+  enforced by Enhanced Access Control, not just convention. The agent actually updates it
+  after every settled call (completed calls, mean latency), not just at setup. Details and
+  setup scripts in `packages/identity/README.md`.
 
 ## Running it locally
 
