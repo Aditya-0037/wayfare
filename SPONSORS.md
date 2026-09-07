@@ -76,13 +76,30 @@ Base/Tempo, no confirmed sandbox mode.
 with an already-listed Bazantic gateway (e.g. PurpleAir or Api Ninjas, both seen live on
 the platform already).
 
-**What's blocking right now:** creating a Gateway via the raw API (`POST /v1/gateways`)
-rejects our API key in every header format tried (`Authorization: Bearer`, raw
-`Authorization`, `x-api-key`), even though `GET` reads accept `x-api-key` fine. Registering
-through the dashboard UI directly (Gateways tab) is the fallback — in progress.
+**Gateways: done.** The raw REST API (`POST /v1/gateways`) rejected our dashboard-issued
+API key in every header format tried — turned out gateway management needs a *separate*
+device-login session, not that key. `npm i -g @bazantic/cli`, `baz login` (device-code
+flow, approved once in the browser), then `baz gateway add --spec-url ... --endpoint
+... --auth-type x402-mpp --status draft` for each provider. Endpoint must be `https://`
+— no localhost — so each provider is temporarily exposed via a `cloudflared` quick tunnel
+pending a real deployment. All three registered and confirmed via `baz gateway list`:
 
-**What it unlocks once live:** `auth.type: "x402-mpp"` on their Gateway schema means
-Bazantic natively understands our payment model. `/v1/recipes/{handle}/test-runs` allows
-testing a draft Recipe before publishing.
+| Provider | Gateway slug | MCP endpoint |
+|---|---|---|
+| swift | `gxfxdj6pbfbpjhxz4rimmrk6kq` | `https://gxfxdj6pbfbpjhxz4rimmrk6kq.bazgateway.com/mcp` |
+| deep | `ydhc6cktzjfhpbaymi55wf7xx4` | `https://ydhc6cktzjfhpbaymi55wf7xx4.bazgateway.com/mcp` |
+| niche | `xo32sarhtfcfzcqzy7ii2we2d4` | `https://xo32sarhtfcfzcqzy7ii2we2d4.bazgateway.com/mcp` |
 
-**Status:** account + API key exist; gateway not yet registered (M5 not started).
+**Caveat:** these gateways currently forward to `trycloudflare.com` tunnel URLs pointed at
+providers running locally — they'll go dead if those processes/tunnels stop. Fine for
+testing the registration flow; needs a real deployment before final submission.
+
+**Recipes: still open.** The CLI has no `recipe` subcommand (gateways/curl/wallet/grants
+only) — Recipes are dashboard-only for now. The raw API's `/v1/recipes` endpoints also
+reject both the dashboard API key *and* the CLI's own session token in every format tried,
+so this one genuinely needs the dashboard's Recipes tab by hand. This is what both
+remaining prizes need: a Recipe combining one of the three gateways above with an
+already-listed one (PurpleAir or Api Ninjas were seen live on the platform).
+
+**Status:** all three gateways live (satisfies "Agentify a New API"'s gateway requirement).
+Recipe not yet built — the one piece left for both eligible Bazantic prizes.
