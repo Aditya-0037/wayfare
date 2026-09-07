@@ -95,13 +95,27 @@ pending a real deployment. All three registered and confirmed via `baz gateway l
 `https://wayfare-niche.onrender.com`. ENS `agent-endpoint[web]` for all three now points
 at these — verified by running the actual agent end to end against them (discover, quote,
 decline niche on non-list input, pick deep, pay, HCS receipt, reputation update), not just
-a health check.
+a health check. Re-registered all three gateways pointing at these Render URLs (the `baz`
+CLI has no update/delete, only add/list, so the old tunnel-backed entries are now stale
+duplicates — harmless, but worth deleting via the dashboard before submission):
 
-**Remaining gap:** the three gateways above were registered *before* the Render URLs
-existed, so they still forward to the `trycloudflare.com` tunnels. The `baz` CLI has no
-`gateway update` or `delete` — only `add`/`list` — so re-pointing them needs the dashboard.
-Left the tunnels running for now so the existing registrations stay functional; re-point
-(or delete-and-recreate) via the dashboard before final submission.
+| Provider | Gateway slug | Endpoint |
+|---|---|---|
+| swift | `c3sac2kabjbeldnj7lyut7iyzq` | `https://wayfare-swift.onrender.com` |
+| deep | `tgbve4lyhrcczglh637jp2kvqu` | `https://wayfare-deep.onrender.com` |
+| niche | `yd44u25h5nh6pnxgay7dojwjri` | `https://wayfare-niche.onrender.com` |
+
+**Important finding: `draft` gateways don't actually proxy traffic.** Calling
+`https://<slug>.bazgateway.com/health` on any of these — old or new — returns a bare 404,
+even though the registration itself succeeds and shows correctly in `gateway list`.
+Cross-referenced against the `become-a-provider` page's note that a *dedicated* gateway
+created as `active` needs "an active payout account" (a real banking/KYC step): `draft`
+appears to be registration-only, and actually serving requests needs `active` status,
+which needs that payout account set up. Setting up real payout/banking details isn't
+something to automate — that's a decision for the account owner. The registration itself
+(correct OpenAPI spec, correct endpoint, correct auth type) is real and complete; going
+fully live needs you to flip it to `active` via the dashboard once payout is configured,
+if you want it actually callable rather than just registered.
 
 **Recipes: still open.** The CLI has no `recipe` subcommand (gateways/curl/wallet/grants
 only) — Recipes are dashboard-only for now. The raw API's `/v1/recipes` endpoints also
