@@ -27,6 +27,8 @@ This README tracks what's actually built, not what's planned.
       price per call, max calls, and a balance floor checked against the *real* on-chain
       Hedera balance (not a local counter). A run with nothing affordable, or one that would
       drain the reserve, refuses before ever calling `fetchWithPayment` — never after.
+- [x] Bonus — HCS-14 agent identity. The agent and each provider have a deterministic,
+      independently-verifiable identity anchored to HCS — see `packages/receipts/README.md`.
 - [ ] M5, M7, M9: not started
 
 ## Layout

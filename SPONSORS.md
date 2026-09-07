@@ -16,12 +16,18 @@ comes later, per M9.
 - Verifiable payment audit trail on HCS — ✅ every settled call, `packages/receipts`.
 - Agent discovery via a directory — ✅ ENS-based, arguably stronger than the "UCP" example given.
 - Multi-agent negotiation (A2A/ACP) — not done.
-- On-chain agent identity via ERC-8004 or HCS-14 — not done; worth a look if there's time.
+- On-chain agent identity via ERC-8004 or HCS-14 — ✅ done. HCS-14 (deterministic id,
+  SHA-384 + base58 of six canonical fields), published for the agent and each provider,
+  verified independently by recomputing the hash from the on-chain record and confirming
+  it matches — not just asserted. Matched to the *real* reference implementation's field
+  order (`skills, name, nativeId, protocol, registry, version`), which differs from what
+  the published spec page's prose says (it claims alphabetical — the code doesn't do that).
 - HTS tokens / custom fee schedules — not done, plain HBAR only.
 - Recurring/streamed payments via Scheduled Transactions — not done.
 
-**Proof:** HashScan links in `README.md` Status section; Mirror Node topic
-`https://testnet.mirrornode.hedera.com/api/v1/topics/0.0.10403773/messages`.
+**Proof:** HashScan links in `README.md` Status section; receipts topic
+`https://testnet.mirrornode.hedera.com/api/v1/topics/0.0.10403773/messages`; HCS-14
+identity topic `https://testnet.mirrornode.hedera.com/api/v1/topics/0.0.10404697/messages`.
 
 There's also a separate, unrelated Hedera track ("Open Source — Improve the Hedera
 Harness," $2,000, contributing to github.com/hedera-dev/hedera-harness) — not something
