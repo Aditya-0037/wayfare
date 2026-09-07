@@ -4,6 +4,7 @@ import HowItWorks from "./components/HowItWorks";
 import ProofBand from "./components/ProofBand";
 import RunConsole from "./components/RunConsole";
 import Footer from "./components/Footer";
+import EasterEgg from "./components/EasterEgg";
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
         <RunConsole />
       </main>
       <Footer />
+      <EasterEgg />
     </div>
   );
 }
