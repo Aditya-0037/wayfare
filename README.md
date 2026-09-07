@@ -20,7 +20,10 @@ This README tracks what's actually built, not what's planned.
       `apps/agent/src` (`grep -r "provider.*http" apps/agent/src` returns nothing).
 - [x] M4 — choice. All three providers live, independently paid for real. Two runs with
       different budgets pick different providers, with the reasoning logged — see below.
-- [ ] M5 — M9: not started
+- [x] M6 — receipts. Every settled call anchors to one HCS topic (provider ENS name,
+      quote id, amount, tx id, result hash, timestamp), independently checkable on
+      Mirror Node: https://testnet.mirrornode.hedera.com/api/v1/topics/0.0.10403773/messages
+- [ ] M5, M7 — M9: not started
 
 ## Layout
 
@@ -35,7 +38,7 @@ apps/
 packages/
   identity/              built — ENS resolution + setup, real ENSv2 beta on Sepolia
   discovery/             not yet built (M5) — Bazantic MCP + Recipes
-  receipts/              not yet built (M6) — HCS receipts
+  receipts/              built — one HCS topic, anchors every settled call
 ```
 
 Task domain for the three providers: text summarization.
@@ -85,4 +88,5 @@ The agent discovers all three from ENS, asks each for a quote, drops any that ca
 the input (niche 422s on non-list text before any payment), picks the highest-quality one
 it can afford, and pays it. Run it again with a small budget —
 `MAX_TOTAL_TINYBARS=150000 MAX_PRICE_PER_CALL_TINYBARS=150000 npx tsx src/index.ts "..."`
-— and it picks swift instead, logging exactly why. Every run prints a HashScan link.
+— and it picks swift instead, logging exactly why. Every run prints a HashScan link and a
+Mirror Node link for the HCS receipt it anchored.
