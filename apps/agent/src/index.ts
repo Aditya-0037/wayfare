@@ -1,13 +1,6 @@
 import "dotenv/config";
-import { x402Client } from "@x402/core/client";
-import { decodePaymentResponseHeader } from "@x402/core/http";
-import { wrapFetchWithPayment } from "@x402/fetch";
-import { AccountBalanceQuery, AccountId, Client, createClientHederaSigner, PrivateKey } from "@x402/hedera";
-import { ExactHederaScheme } from "@x402/hedera/exact/client";
-import { config, Budget } from "./config.js";
-import { discoverAndAssess } from "./discover.js";
-import { decide } from "./decide.js";
-import { hashResult, recordReceipt } from "@wayfare/receipts";
+import { runAgent } from "./runAgent.js";
+import type { AgentEvent } from "./events.js";
 
 const DEFAULT_TEXT =
   "Wayfare is an agent that discovers services it has never seen before. " +
@@ -15,90 +8,53 @@ const DEFAULT_TEXT =
   "It leaves a verifiable receipt trail for every provider it deals with. " +
   "The agent doesn't know its own tools until it looks.";
 
+function log(event: AgentEvent) {
+  switch (event.type) {
+    case "run_started":
+      console.log(`[agent] task: summarize ${event.text.length} chars`);
+      console.log("[agent] DISCOVER: resolving providers under wayfare.eth via ENS event logs ...");
+      break;
+    case "provider_discovered":
+      console.log(`[agent] discovered ${event.name}`);
+      break;
+    case "quote_received":
+      console.log(`  - ${event.provider}: ${event.priceTinybars} tinybars`);
+      break;
+    case "quote_declined":
+      console.log(`  - ${event.provider}: declined — ${event.reason}`);
+      break;
+    case "decision_made":
+      console.log("[agent] DECIDE:");
+      for (const line of event.reasoning) console.log(`  ${line}`);
+      break;
+    case "run_refused":
+      console.log(`[agent] refused: ${event.reason}`);
+      break;
+    case "payment_settled":
+      console.log(`[agent] PAY: settled with ${event.provider} for ${event.priceTinybars} tinybars`);
+      console.log(`[agent] HashScan: ${event.hashscanUrl}`);
+      break;
+    case "result_delivered":
+      console.log("[agent] CONSUME:", event.result);
+      break;
+    case "budget_updated":
+      console.log(
+        `[agent] spent ${event.totalSpentTinybars}/${event.maxTotalTinybars} total, ${event.callsMade}/${event.maxCalls} calls`,
+      );
+      break;
+    case "receipt_recorded":
+      console.log(`[agent] RECORD: receipt at topic ${event.topicId}, sequence #${event.sequenceNumber}`);
+      console.log(`[agent] Mirror Node: ${event.mirrorNodeUrl}`);
+      break;
+    case "run_complete":
+      console.log(event.success ? "[agent] done." : "[agent] run ended without paying anything.");
+      break;
+  }
+}
+
 async function main() {
   const text = process.argv.slice(2).join(" ") || DEFAULT_TEXT;
-  const budget = new Budget(config.maxTotalTinybars, config.maxPricePerCallTinybars, config.maxCalls);
-
-  console.log(`[agent] task: summarize ${text.length} chars`);
-  console.log("[agent] DISCOVER: resolving providers under wayfare.eth via ENS event logs ...");
-  const { candidates, rejected } = await discoverAndAssess(text);
-
-  console.log(`[agent] ASSESS: ${candidates.length} provider(s) quoted, ${rejected.length} declined`);
-  for (const c of candidates) console.log(`  - ${c.provider}: ${c.priceTinybars} tinybars`);
-  for (const r of rejected) console.log(`  - ${r.provider}: declined — ${r.reason}`);
-
-  console.log("[agent] DECIDE:");
-  const { chosen, reasoning } = decide(candidates, config.maxPricePerCallTinybars, budget.remainingTinybars);
-  for (const line of reasoning) console.log(`  ${line}`);
-
-  if (!chosen) {
-    console.log("[agent] no provider chosen — stopping without paying anything");
-    return;
-  }
-
-  budget.assertCanSpend(chosen.priceTinybars);
-
-  console.log("[agent] checking the real on-chain balance against the reserve floor ...");
-  const balanceCheckClient = Client.forTestnet().setOperator(
-    AccountId.fromString(config.payerAccountId),
-    PrivateKey.fromStringECDSA(config.payerPrivateKey),
-  );
-  const balance = await new AccountBalanceQuery().setAccountId(config.payerAccountId).execute(balanceCheckClient);
-  balanceCheckClient.close();
-  budget.assertBalanceFloor(balance.hbars.toTinybars().toNumber(), chosen.priceTinybars, config.balanceFloorTinybars);
-
-  const signer = createClientHederaSigner(config.payerAccountId, PrivateKey.fromStringECDSA(config.payerPrivateKey), {
-    network: "hedera:testnet",
-  });
-  const client = x402Client.fromConfig({
-    schemes: [{ network: "hedera:*", client: new ExactHederaScheme(signer) }],
-    spendControls: {
-      allowedAssets: [{ network: "hedera:testnet", asset: "0.0.0", maxAmountPerPayment: String(config.maxPricePerCallTinybars) }],
-    },
-  });
-  const fetchWithPayment = wrapFetchWithPayment(fetch, client);
-
-  console.log(`[agent] PAY: settling with ${chosen.provider} via x402/Blocky402 ...`);
-  const execRes = await fetchWithPayment(`${chosen.record.endpoints.web}${chosen.executePath}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ quote_id: chosen.quoteId, text }),
-  });
-
-  if (!execRes.ok) {
-    throw new Error(`execute failed: ${execRes.status} ${await execRes.text()}`);
-  }
-
-  const result = await execRes.json();
-  budget.recordSpend(chosen.priceTinybars);
-
-  const paymentResponseHeader = execRes.headers.get("PAYMENT-RESPONSE") ?? execRes.headers.get("payment-response");
-  const settlement = paymentResponseHeader ? decodePaymentResponseHeader(paymentResponseHeader) : undefined;
-
-  console.log("[agent] CONSUME:", result);
-  console.log(
-    `[agent] spent ${chosen.priceTinybars} tinybars (${budget.totalSpentTinybars}/${config.maxTotalTinybars} total, ` +
-      `${budget.callsMade}/${config.maxCalls} calls)`,
-  );
-
-  if (settlement?.transaction) {
-    console.log(`[agent] settlement tx: ${settlement.transaction}`);
-    console.log(`[agent] HashScan: https://hashscan.io/testnet/transaction/${settlement.transaction}`);
-
-    console.log("[agent] RECORD: anchoring a receipt to HCS ...");
-    const recorded = await recordReceipt({
-      providerName: chosen.record.name,
-      quoteId: chosen.quoteId,
-      amountTinybars: chosen.priceTinybars,
-      hederaTxId: settlement.transaction,
-      resultHash: hashResult(result),
-      timestamp: new Date().toISOString(),
-    });
-    console.log(`[agent] receipt: topic ${recorded.topicId}, sequence #${recorded.hcsSequenceNumber}`);
-    console.log(`[agent] Mirror Node: ${recorded.mirrorNodeUrl}`);
-  } else {
-    console.warn("[agent] no PAYMENT-RESPONSE header in the response — could not resolve a HashScan link");
-  }
+  await runAgent(text, log);
 }
 
 main().catch((err) => {

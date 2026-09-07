@@ -1,4 +1,5 @@
 import { discoverProviders, type AgentRecord } from "@wayfare/identity";
+import { providerDiscoveredEvent, type Emit } from "./events.js";
 
 export interface Candidate {
   provider: string; // label, e.g. "deep"
@@ -27,16 +28,18 @@ function labelOf(record: AgentRecord): string {
  * discovered provider for a quote on this exact task; a provider outside its domain, like
  * niche on prose text, rejects here — before any payment, never guessed around).
  */
-export async function discoverAndAssess(text: string): Promise<AssessResult> {
+export async function discoverAndAssess(text: string, emit: Emit = () => {}): Promise<AssessResult> {
   const providers = await discoverProviders();
   const candidates: Candidate[] = [];
   const rejected: RejectedCandidate[] = [];
 
   for (const record of providers) {
+    emit(providerDiscoveredEvent(record));
     const provider = labelOf(record);
     const webEndpoint = record.endpoints.web;
     if (!webEndpoint) {
       rejected.push({ provider, reason: "no agent-endpoint[web] set" });
+      emit({ type: "quote_declined", provider, reason: "no agent-endpoint[web] set" });
       continue;
     }
 
@@ -53,7 +56,9 @@ export async function discoverAndAssess(text: string): Promise<AssessResult> {
         error?: string;
       };
       if (!res.ok || !body.quote_id || typeof body.price_tinybars !== "number") {
-        rejected.push({ provider, reason: body.error ?? `quote failed (${res.status})` });
+        const reason = body.error ?? `quote failed (${res.status})`;
+        rejected.push({ provider, reason });
+        emit({ type: "quote_declined", provider, reason });
         continue;
       }
       candidates.push({
@@ -63,8 +68,11 @@ export async function discoverAndAssess(text: string): Promise<AssessResult> {
         priceTinybars: body.price_tinybars,
         executePath: body.execute_path ?? "/v1/execute",
       });
+      emit({ type: "quote_received", provider, priceTinybars: body.price_tinybars });
     } catch (err) {
-      rejected.push({ provider, reason: err instanceof Error ? err.message : String(err) });
+      const reason = err instanceof Error ? err.message : String(err);
+      rejected.push({ provider, reason });
+      emit({ type: "quote_declined", provider, reason });
     }
   }
 
