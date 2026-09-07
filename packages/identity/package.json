@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@ensdomains/ensjs": "5.0.0-sepolia-fix.1",
+    "bs58": "^6.0.0",
     "dotenv": "^16.4.5",
     "viem": "^2.35.0"
   },
