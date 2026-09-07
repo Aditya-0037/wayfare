@@ -22,9 +22,9 @@ const providers = [
 ];
 
 const colorMap = {
-  signal: { text: "text-signal", ring: "ring-signal/30", glow: "rgba(125,255,179,0.18)" },
-  signal2: { text: "text-signal2", ring: "ring-signal2/30", glow: "rgba(125,184,255,0.18)" },
-  amber: { text: "text-amber", ring: "ring-amber/30", glow: "rgba(255,179,125,0.18)" },
+  signal: { text: "text-signal", ring: "ring-signal/30", glow: "rgb(var(--c-signal) / calc(0.18 * var(--orb-strength)))" },
+  signal2: { text: "text-signal2", ring: "ring-signal2/30", glow: "rgb(var(--c-signal2) / calc(0.18 * var(--orb-strength)))" },
+  amber: { text: "text-amber", ring: "ring-amber/30", glow: "rgb(var(--c-amber) / calc(0.18 * var(--orb-strength)))" },
 };
 
 const steps = [

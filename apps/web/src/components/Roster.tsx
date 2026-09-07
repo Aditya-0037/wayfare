@@ -35,7 +35,11 @@ export default function Roster({ providers, chosen }: { providers: ProviderState
               {statusLabel[p.status]}
             </span>
           </div>
-          {p.agentContext && <p className="mt-2 text-xs leading-relaxed text-haze">{p.agentContext}</p>}
+          {p.agentContext && (
+            <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-haze" title={p.agentContext}>
+              {p.agentContext}
+            </p>
+          )}
           <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-wisp">
             {typeof p.quotePriceTinybars === "number" && (
               <span className="text-signal2">quote: {formatHbar(p.quotePriceTinybars)}</span>

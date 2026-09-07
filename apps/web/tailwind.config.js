@@ -33,6 +33,7 @@ export default {
       boxShadow: {
         glow: "0 0 40px -8px rgb(var(--c-signal) / 0.35)",
         glow2: "0 0 40px -8px rgb(var(--c-signal2) / 0.35)",
+        glowAmber: "0 0 20px 2px rgb(var(--c-amber) / 0.5)",
         card: "0 8px 30px -12px rgb(var(--c-shadow) / var(--shadow-strength))",
       },
       backgroundImage: {

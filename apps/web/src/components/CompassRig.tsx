@@ -16,9 +16,19 @@ export default function CompassRig() {
             key={i}
             className="absolute inset-0 rounded-full border"
             style={{
-              borderColor: ["rgba(125,255,179,0.45)", "rgba(125,184,255,0.4)", "rgba(255,179,125,0.35)"][i],
+              borderColor: [
+                "rgb(var(--c-signal) / calc(0.45 * var(--orb-strength)))",
+                "rgb(var(--c-signal2) / calc(0.4 * var(--orb-strength)))",
+                "rgb(var(--c-amber) / calc(0.35 * var(--orb-strength)))",
+              ][i],
               transform: `rotateX(90deg) scale(${1 - i * 0.22})`,
-              boxShadow: `0 0 40px -6px ${["rgba(125,255,179,0.25)", "rgba(125,184,255,0.2)", "rgba(255,179,125,0.18)"][i]}`,
+              boxShadow: `0 0 40px -6px ${
+                [
+                  "rgb(var(--c-signal) / calc(0.25 * var(--orb-strength)))",
+                  "rgb(var(--c-signal2) / calc(0.2 * var(--orb-strength)))",
+                  "rgb(var(--c-amber) / calc(0.18 * var(--orb-strength)))",
+                ][i]
+              }`,
             }}
           />
         ))}
@@ -44,7 +54,10 @@ export default function CompassRig() {
         animate={{ rotate: 360 }}
         transition={{ duration: 23, repeat: Infinity, ease: "linear" }}
       >
-        <span className="absolute bottom-8 left-8 h-1.5 w-1.5 rounded-full bg-amber shadow-[0_0_20px_2px_rgba(255,179,125,0.5)]" />
+        <span
+          className="absolute bottom-8 left-8 h-1.5 w-1.5 rounded-full bg-amber"
+          style={{ boxShadow: "0 0 20px 2px rgb(var(--c-amber) / calc(0.5 * var(--orb-strength)))" }}
+        />
       </motion.div>
 
       {/* core */}

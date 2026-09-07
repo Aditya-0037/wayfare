@@ -21,6 +21,10 @@
   --c-shadow: 40 32 20;
   --shadow-strength: 0.12;
   --c-on-accent: 255 255 255;
+  /* Decorative glow blobs (FloatingOrbs, CompassRig) are tuned for the dark theme's
+     near-black backdrop; on the light theme's cream backdrop the same alpha reads as a
+     muddy smear rather than a glow, so scale it down here instead of in each component. */
+  --orb-strength: 0.55;
 }
 
 .dark {
@@ -41,6 +45,7 @@
   --c-shadow: 0 0 0;
   --shadow-strength: 0.6;
   --c-on-accent: 10 10 18;
+  --orb-strength: 1;
 }
 
 html, body, #root {

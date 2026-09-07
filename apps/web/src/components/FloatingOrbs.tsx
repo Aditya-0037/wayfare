@@ -4,15 +4,15 @@ export default function FloatingOrbs() {
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
       <div
         className="absolute -left-16 top-24 h-72 w-72 rounded-full blur-3xl animate-float-slow"
-        style={{ background: "radial-gradient(circle at 30% 30%, rgba(125,255,179,0.35), rgba(125,255,179,0) 70%)" }}
+        style={{ background: "radial-gradient(circle at 30% 30%, rgb(var(--c-signal) / calc(0.35 * var(--orb-strength))), rgb(var(--c-signal) / 0) 70%)" }}
       />
       <div
         className="absolute right-0 top-10 h-96 w-96 rounded-full blur-3xl animate-float2"
-        style={{ background: "radial-gradient(circle at 40% 40%, rgba(125,184,255,0.3), rgba(125,184,255,0) 70%)" }}
+        style={{ background: "radial-gradient(circle at 40% 40%, rgb(var(--c-signal2) / calc(0.3 * var(--orb-strength))), rgb(var(--c-signal2) / 0) 70%)" }}
       />
       <div
         className="absolute left-1/3 bottom-0 h-64 w-64 rounded-full blur-3xl animate-float"
-        style={{ background: "radial-gradient(circle at 50% 50%, rgba(255,179,125,0.22), rgba(255,179,125,0) 70%)" }}
+        style={{ background: "radial-gradient(circle at 50% 50%, rgb(var(--c-amber) / calc(0.22 * var(--orb-strength))), rgb(var(--c-amber) / 0) 70%)" }}
       />
 
       {/* small orbiting facets for depth */}

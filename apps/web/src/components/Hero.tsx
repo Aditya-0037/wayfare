@@ -96,7 +96,7 @@ export default function Hero() {
           transition={{ duration: 0.7, ease: "easeOut", delay: 0.15 }}
           className="relative flex items-center justify-center"
         >
-          <div className="absolute inset-0 -z-10 rounded-[3rem] border border-edge/5 bg-panel/40" />
+          <div className="absolute inset-0 -z-10 rounded-[3rem] border border-edge/10 bg-panel/70 shadow-card" />
           <CompassRig />
         </motion.div>
       </div>
