@@ -15,15 +15,18 @@ This README tracks what's actually built, not what's planned.
 - [x] M2 — ENS resolution. `wayfare.eth` and `swift.wayfare.eth` are registered on real
       ENSv2 (beta) on Sepolia, resolving live via `packages/identity`. `wayfare.reputation`
       is gated by Enhanced Access Control — see `packages/identity/README.md`.
-- [~] M4 — three providers live and independently proven with real payments (swift, deep,
-      niche). Choice logic (agent picks between them against budget) is next, alongside M3.
-- [ ] M3, M5 — M9: not started
+- [x] M3 — discovery replaces config. The agent finds providers by reading `NameRegistered`
+      event logs off wayfare.eth's ENS subregistry — no provider name or URL anywhere in
+      `apps/agent/src` (`grep -r "provider.*http" apps/agent/src` returns nothing).
+- [x] M4 — choice. All three providers live, independently paid for real. Two runs with
+      different budgets pick different providers, with the reasoning logged — see below.
+- [ ] M5 — M9: not started
 
 ## Layout
 
 ```
 apps/
-  agent/               the agent runtime (M1: single hardcoded paid call)
+  agent/               discovers providers over ENS, assesses quotes, decides, pays
   providers/
     swift/              built — fast/cheap text summarizer, x402-gated
     deep/                built — thorough, metered by input size (bucketed pricing)
@@ -61,25 +64,25 @@ Task domain for the three providers: text summarization.
   enforced by Enhanced Access Control, not just convention. Details and setup scripts in
   `packages/identity/README.md`.
 
-## Running M1 locally
+## Running it locally
 
 You need a funded Hedera **testnet** account with an **ECDSA** key (the `@x402/hedera`
 exact scheme currently assumes ECDSA). Get one free from the
 [Hedera Portal](https://portal.hedera.com/) — it auto-funds new testnet accounts with
-1000 test HBAR.
+1000 test HBAR. Each provider needs its own merchant account too — `apps/agent/scripts/
+create-merchant-account.ts` mints one from your funded account, no second portal signup.
 
 1. `npm install` at the repo root (installs all workspaces).
-2. Copy `apps/providers/swift/.env.example` → `.env`, set `HEDERA_MERCHANT_ACCOUNT_ID`
-   to any Hedera account id that can receive HBAR (this is the seller — it never needs
-   a private key).
-3. Copy `apps/agent/.env.example` → `.env`, set `HEDERA_PAYER_ACCOUNT_ID` and
-   `HEDERA_PAYER_PRIVATE_KEY` (ECDSA, `0x`-prefixed) from the account you just funded.
-4. Terminal A: `npm run dev:swift`
-5. Terminal B: `npm run dev:agent`
+2. Set up `wayfare.eth` and its provider subnames once — see `packages/identity/README.md`.
+   (Already done for this repo's own `wayfare.eth`; a fresh fork needs its own registration.)
+3. Copy each `apps/providers/*/.env.example` → `.env`, set `HEDERA_MERCHANT_ACCOUNT_ID`.
+4. Copy `apps/agent/.env.example` → `.env`, set `HEDERA_PAYER_ACCOUNT_ID` /
+   `HEDERA_PAYER_PRIVATE_KEY` (ECDSA, `0x`-prefixed).
+5. Three terminals: `npm run dev:swift`, `npm run dev:deep`, `npm run dev:niche`.
+6. From `apps/agent`: `npx tsx src/index.ts "<some text to summarize>"`
 
-Expected output: a quote, a paid `/v1/execute` call, a summary, and a HashScan link
-(`https://hashscan.io/testnet/transaction/<id>`) proving the on-chain settlement.
-
-`M1_PROVIDER_URL` in `apps/agent/.env` is the **only** hardcoded endpoint in this
-codebase, and only until M3 — the acceptance test for M3 is
-`grep -r "provider.*http" apps/agent/src` returning nothing.
+The agent discovers all three from ENS, asks each for a quote, drops any that can't handle
+the input (niche 422s on non-list text before any payment), picks the highest-quality one
+it can afford, and pays it. Run it again with a small budget —
+`MAX_TOTAL_TINYBARS=150000 MAX_PRICE_PER_CALL_TINYBARS=150000 npx tsx src/index.ts "..."`
+— and it picks swift instead, logging exactly why. Every run prints a HashScan link.
