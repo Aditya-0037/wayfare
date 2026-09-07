@@ -7,6 +7,7 @@ import { ExactHederaScheme } from "@x402/hedera/exact/client";
 import { config, Budget } from "./config.js";
 import { discoverAndAssess } from "./discover.js";
 import { decide } from "./decide.js";
+import { hashResult, recordReceipt } from "@wayfare/receipts";
 
 const DEFAULT_TEXT =
   "Wayfare is an agent that discovers services it has never seen before. " +
@@ -74,6 +75,18 @@ async function main() {
   if (settlement?.transaction) {
     console.log(`[agent] settlement tx: ${settlement.transaction}`);
     console.log(`[agent] HashScan: https://hashscan.io/testnet/transaction/${settlement.transaction}`);
+
+    console.log("[agent] RECORD: anchoring a receipt to HCS ...");
+    const recorded = await recordReceipt({
+      providerName: chosen.record.name,
+      quoteId: chosen.quoteId,
+      amountTinybars: chosen.priceTinybars,
+      hederaTxId: settlement.transaction,
+      resultHash: hashResult(result),
+      timestamp: new Date().toISOString(),
+    });
+    console.log(`[agent] receipt: topic ${recorded.topicId}, sequence #${recorded.hcsSequenceNumber}`);
+    console.log(`[agent] Mirror Node: ${recorded.mirrorNodeUrl}`);
   } else {
     console.warn("[agent] no PAYMENT-RESPONSE header in the response — could not resolve a HashScan link");
   }

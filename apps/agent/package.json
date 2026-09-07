@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@wayfare/identity": "*",
+    "@wayfare/receipts": "*",
     "@x402/core": "2.25.0",
     "@x402/fetch": "2.25.0",
     "@x402/hedera": "2.25.0",
