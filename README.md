@@ -12,7 +12,10 @@ This README tracks what's actually built, not what's planned.
 
 - [x] M1 — one paid call. Settled for real on Hedera testnet via Blocky402:
       https://hashscan.io/testnet/transaction/0.0.7162784-1788608829-232641440
-- [ ] M2 — M9: not started
+- [x] M2 — ENS resolution. `wayfare.eth` and `swift.wayfare.eth` are registered on real
+      ENSv2 (beta) on Sepolia, resolving live via `packages/identity`. `wayfare.reputation`
+      is gated by Enhanced Access Control — see `packages/identity/README.md`.
+- [ ] M3 — M9: not started
 
 ## Layout
 
@@ -24,7 +27,7 @@ apps/
     deep/, niche/        not yet built (M4)
   web/                   not yet built (M7)
 packages/
-  identity/              not yet built (M2) — ENS resolution
+  identity/              built — ENS resolution + setup, real ENSv2 beta on Sepolia
   discovery/             not yet built (M5) — Bazantic MCP + Recipes
   receipts/              not yet built (M6) — HCS receipts
 ```
@@ -40,6 +43,16 @@ first two sentences verbatim (cheap, shallow). `deep` and `niche` are not yet bu
   `https://api.testnet.blocky402.com`, open access, no API key. It holds the fee-payer
   key and submits/pays gas for every settlement; providers only ever declare a `payTo`
   account, never a private key.
+
+## ENS layer
+
+- `wayfare.eth` and `swift.wayfare.eth` live on ENSv2 (beta), on Sepolia — a genuinely
+  different, newer contract set than the classic ENS v1 registry most tooling targets.
+- Records follow [ENSIP-26](https://discuss.ens.domains/t/ensip-26-ens-native-ai-identity/21968):
+  `agent-context` (free text describing the provider), `agent-endpoint[web]`, and a custom
+  `wayfare.reputation` record that only a separate settlement-recorder key can write —
+  enforced by Enhanced Access Control, not just convention. Details and setup scripts in
+  `packages/identity/README.md`.
 
 ## Running M1 locally
 
