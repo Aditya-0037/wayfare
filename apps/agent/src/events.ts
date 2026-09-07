@@ -11,6 +11,7 @@ export type AgentEvent =
   | { type: "payment_settled"; provider: string; priceTinybars: number; transaction: string; hashscanUrl: string }
   | { type: "result_delivered"; provider: string; result: unknown }
   | { type: "receipt_recorded"; topicId: string; sequenceNumber: string; mirrorNodeUrl: string }
+  | { type: "reputation_updated"; provider: string; completed_calls: number; disputes: number; mean_latency_ms: number | null }
   | { type: "budget_updated"; totalSpentTinybars: number; maxTotalTinybars: number; callsMade: number; maxCalls: number; remainingTinybars: number }
   | { type: "run_refused"; reason: string }
   | { type: "run_complete"; success: boolean };

@@ -46,6 +46,12 @@ function log(event: AgentEvent) {
       console.log(`[agent] RECORD: receipt at topic ${event.topicId}, sequence #${event.sequenceNumber}`);
       console.log(`[agent] Mirror Node: ${event.mirrorNodeUrl}`);
       break;
+    case "reputation_updated":
+      console.log(
+        `[agent] reputation for ${event.provider}: ${event.completed_calls} completed calls, ` +
+          `mean latency ${event.mean_latency_ms}ms`,
+      );
+      break;
     case "run_complete":
       console.log(event.success ? "[agent] done." : "[agent] run ended without paying anything.");
       break;

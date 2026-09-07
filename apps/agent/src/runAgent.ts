@@ -4,6 +4,7 @@ import { wrapFetchWithPayment } from "@x402/fetch";
 import { AccountBalanceQuery, AccountId, Client, createClientHederaSigner, PrivateKey } from "@x402/hedera";
 import { ExactHederaScheme } from "@x402/hedera/exact/client";
 import { hashResult, recordReceipt } from "@wayfare/receipts";
+import { updateReputation } from "@wayfare/identity";
 import { config, Budget } from "./config.js";
 import { discoverAndAssess } from "./discover.js";
 import { decide } from "./decide.js";
@@ -69,11 +70,13 @@ export async function runAgent(text: string, emit: Emit): Promise<RunResult> {
   });
   const fetchWithPayment = wrapFetchWithPayment(fetch, client);
 
+  const callStartedAt = Date.now();
   const execRes = await fetchWithPayment(`${chosen.record.endpoints.web}${chosen.executePath}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ quote_id: chosen.quoteId, text }),
   });
+  const latencyMs = Date.now() - callStartedAt;
 
   if (!execRes.ok) {
     emit({ type: "run_refused", reason: `execute failed: ${execRes.status} ${await execRes.text()}` });
@@ -123,6 +126,9 @@ export async function runAgent(text: string, emit: Emit): Promise<RunResult> {
     sequenceNumber: recorded.hcsSequenceNumber,
     mirrorNodeUrl: recorded.mirrorNodeUrl,
   });
+
+  const reputation = await updateReputation(chosen.record.name, chosen.record.resolverAddress, latencyMs);
+  emit({ type: "reputation_updated", provider: chosen.provider, ...reputation });
 
   emit({ type: "run_complete", success: true });
   return { success: true, provider: chosen.provider, transaction: settlement.transaction };
