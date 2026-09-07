@@ -4,6 +4,19 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "build": "echo 'not yet built — see M2 in requirements' && exit 1"
+    "register-root": "tsx scripts/register-wayfare-eth.ts",
+    "setup-provider": "tsx scripts/setup-provider.ts",
+    "resolve": "tsx scripts/resolve-provider.ts",
+    "verify-eac": "tsx scripts/verify-eac.ts"
+  },
+  "dependencies": {
+    "@ensdomains/ensjs": "5.0.0-sepolia-fix.1",
+    "dotenv": "^16.4.5",
+    "viem": "^2.35.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
   }
 }
