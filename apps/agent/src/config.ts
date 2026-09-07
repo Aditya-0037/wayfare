@@ -12,9 +12,6 @@ export const config = {
   maxTotalTinybars: Number(process.env.MAX_TOTAL_TINYBARS ?? 5_000_000),
   maxPricePerCallTinybars: Number(process.env.MAX_PRICE_PER_CALL_TINYBARS ?? 1_000_000),
   maxCalls: Number(process.env.MAX_CALLS ?? 5),
-  // M1 only: no discovery mechanism exists yet, so the one provider is named directly.
-  // Deleted at M3 once ENS discovery replaces it — see M3 acceptance test in requirements.
-  m1ProviderUrl: process.env.M1_PROVIDER_URL ?? "http://localhost:4001",
 };
 
 export class Budget {
@@ -56,5 +53,9 @@ export class Budget {
 
   get callsMade(): number {
     return this.calls;
+  }
+
+  get remainingTinybars(): number {
+    return this.maxTotalTinybars - this.spentTinybars;
   }
 }

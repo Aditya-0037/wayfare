@@ -5,42 +5,37 @@ import { wrapFetchWithPayment } from "@x402/fetch";
 import { createClientHederaSigner, PrivateKey } from "@x402/hedera";
 import { ExactHederaScheme } from "@x402/hedera/exact/client";
 import { config, Budget } from "./config.js";
-
-interface Quote {
-  quote_id: string;
-  price_tinybars: number;
-  asset: string;
-  network: string;
-  expires_at: string;
-}
+import { discoverAndAssess } from "./discover.js";
+import { decide } from "./decide.js";
 
 const DEFAULT_TEXT =
   "Wayfare is an agent that discovers services it has never seen before. " +
   "It pays for them per call on Hedera testnet via x402. " +
   "It leaves a verifiable receipt trail for every provider it deals with. " +
-  "This is milestone one: a single paid call, hardcoded to one provider.";
+  "The agent doesn't know its own tools until it looks.";
 
 async function main() {
   const text = process.argv.slice(2).join(" ") || DEFAULT_TEXT;
   const budget = new Budget(config.maxTotalTinybars, config.maxPricePerCallTinybars, config.maxCalls);
 
-  console.log(`[agent] M1: one paid call to ${config.m1ProviderUrl}`);
   console.log(`[agent] task: summarize ${text.length} chars`);
+  console.log("[agent] DISCOVER: resolving providers under wayfare.eth via ENS event logs ...");
+  const { candidates, rejected } = await discoverAndAssess(text);
 
-  const quoteRes = await fetch(`${config.m1ProviderUrl}/v1/quote`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ input_spec: { char_count: text.length } }),
-  });
-  if (!quoteRes.ok) {
-    throw new Error(`quote failed: ${quoteRes.status} ${await quoteRes.text()}`);
+  console.log(`[agent] ASSESS: ${candidates.length} provider(s) quoted, ${rejected.length} declined`);
+  for (const c of candidates) console.log(`  - ${c.provider}: ${c.priceTinybars} tinybars`);
+  for (const r of rejected) console.log(`  - ${r.provider}: declined — ${r.reason}`);
+
+  console.log("[agent] DECIDE:");
+  const { chosen, reasoning } = decide(candidates, config.maxPricePerCallTinybars, budget.remainingTinybars);
+  for (const line of reasoning) console.log(`  ${line}`);
+
+  if (!chosen) {
+    console.log("[agent] no provider chosen — stopping without paying anything");
+    return;
   }
-  const quote = (await quoteRes.json()) as Quote;
-  console.log(
-    `[agent] quote ${quote.quote_id}: ${quote.price_tinybars} tinybars, expires ${quote.expires_at}`,
-  );
 
-  budget.assertCanSpend(quote.price_tinybars);
+  budget.assertCanSpend(chosen.priceTinybars);
 
   const signer = createClientHederaSigner(config.payerAccountId, PrivateKey.fromStringECDSA(config.payerPrivateKey), {
     network: "hedera:testnet",
@@ -48,19 +43,16 @@ async function main() {
   const client = x402Client.fromConfig({
     schemes: [{ network: "hedera:*", client: new ExactHederaScheme(signer) }],
     spendControls: {
-      // Our own Budget guardrails (MAX_TOTAL_TINYBARS / MAX_PRICE_PER_CALL_TINYBARS / MAX_CALLS)
-      // already enforce the actual numeric limits above, before this client is ever asked to pay.
-      // This just scopes the SDK's own default $1-cap USD spend control to the one asset we expect.
       allowedAssets: [{ network: "hedera:testnet", asset: "0.0.0", maxAmountPerPayment: String(config.maxPricePerCallTinybars) }],
     },
   });
   const fetchWithPayment = wrapFetchWithPayment(fetch, client);
 
-  console.log("[agent] paying via x402/Blocky402 and calling /v1/execute ...");
-  const execRes = await fetchWithPayment(`${config.m1ProviderUrl}/v1/execute`, {
+  console.log(`[agent] PAY: settling with ${chosen.provider} via x402/Blocky402 ...`);
+  const execRes = await fetchWithPayment(`${chosen.record.endpoints.web}${chosen.executePath}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ quote_id: quote.quote_id, text }),
+    body: JSON.stringify({ quote_id: chosen.quoteId, text }),
   });
 
   if (!execRes.ok) {
@@ -68,14 +60,14 @@ async function main() {
   }
 
   const result = await execRes.json();
-  budget.recordSpend(quote.price_tinybars);
+  budget.recordSpend(chosen.priceTinybars);
 
   const paymentResponseHeader = execRes.headers.get("PAYMENT-RESPONSE") ?? execRes.headers.get("payment-response");
   const settlement = paymentResponseHeader ? decodePaymentResponseHeader(paymentResponseHeader) : undefined;
 
-  console.log("[agent] result:", result);
+  console.log("[agent] CONSUME:", result);
   console.log(
-    `[agent] spent ${quote.price_tinybars} tinybars (${budget.totalSpentTinybars}/${config.maxTotalTinybars} total, ` +
+    `[agent] spent ${chosen.priceTinybars} tinybars (${budget.totalSpentTinybars}/${config.maxTotalTinybars} total, ` +
       `${budget.callsMade}/${config.maxCalls} calls)`,
   );
 
