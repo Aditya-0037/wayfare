@@ -1,10 +1,23 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAgentRun } from "../lib/useAgentRun";
 import Roster from "./Roster";
 import Reasoning from "./Reasoning";
 import Ledger from "./Ledger";
 import ResultPanel from "./ResultPanel";
 import AgentStage from "./AgentStage";
+import AchievementToast from "./AchievementToast";
+import { sfx, type SfxKey } from "../lib/sfx";
+import type { AgentEvent } from "../lib/types";
+
+const EVENT_SOUND: Partial<Record<AgentEvent["type"], SfxKey>> = {
+  provider_discovered: "discover",
+  quote_received: "quote",
+  quote_declined: "decline",
+  decision_made: "chosen",
+  payment_settled: "paid",
+  receipt_recorded: "receipt",
+  run_refused: "refused",
+};
 
 const samples = [
   {
@@ -34,11 +47,30 @@ const connCopy: Record<string, { label: string; dot: string }> = {
 };
 
 export default function RunConsole() {
-  const { connection, connect, phase, providers, reasoning, chosen, ledger, budget, result, refusedReason, startRun } = useAgentRun();
+  const { connection, connect, phase, providers, reasoning, chosen, ledger, budget, result, refusedReason, rawLog, startRun } = useAgentRun();
   const [text, setText] = useState(samples[0].text);
+  const [muted, setMuted] = useState(false);
 
   const busy = phase === "running";
   const providerList = Object.values(providers);
+
+  const seenEvents = useRef(0);
+  useEffect(() => {
+    if (muted) {
+      seenEvents.current = rawLog.length;
+      return;
+    }
+    for (let i = seenEvents.current; i < rawLog.length; i++) {
+      const e = rawLog[i];
+      if (e.type === "decision_made") {
+        if (e.chosen) sfx.chosen();
+        continue;
+      }
+      const key = EVENT_SOUND[e.type];
+      if (key) sfx[key]();
+    }
+    seenEvents.current = rawLog.length;
+  }, [rawLog, muted]);
 
   function handleRun() {
     if (!text.trim() || busy) return;
@@ -47,6 +79,7 @@ export default function RunConsole() {
 
   return (
     <section id="console" className="relative py-24">
+      <AchievementToast rawLog={rawLog} />
       <div className="mx-auto max-w-7xl px-6">
         <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
           <div>
@@ -56,9 +89,18 @@ export default function RunConsole() {
               straight from the server, in real time.
             </p>
           </div>
-          <div className="flex items-center gap-2 rounded-full border border-edge/10 bg-panel/60 px-3 py-1.5 text-xs text-haze">
-            <span className={`h-1.5 w-1.5 rounded-full ${connCopy[connection].dot}`} />
-            {connCopy[connection].label}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setMuted((m) => !m)}
+              title={muted ? "Unmute sound effects" : "Mute sound effects"}
+              className="rounded-full border border-edge/10 bg-panel/60 px-3 py-1.5 text-xs text-haze transition hover:border-signal/30 hover:text-fg"
+            >
+              {muted ? "🔇" : "🔊"}
+            </button>
+            <div className="flex items-center gap-2 rounded-full border border-edge/10 bg-panel/60 px-3 py-1.5 text-xs text-haze">
+              <span className={`h-1.5 w-1.5 rounded-full ${connCopy[connection].dot}`} />
+              {connCopy[connection].label}
+            </div>
           </div>
         </div>
 
