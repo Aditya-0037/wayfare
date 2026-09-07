@@ -12,6 +12,9 @@ export const config = {
   maxTotalTinybars: Number(process.env.MAX_TOTAL_TINYBARS ?? 5_000_000),
   maxPricePerCallTinybars: Number(process.env.MAX_PRICE_PER_CALL_TINYBARS ?? 1_000_000),
   maxCalls: Number(process.env.MAX_CALLS ?? 5),
+  // Refuse to spend the account down below this much HBAR, regardless of how much run
+  // budget is left — a reserve against fees/other activity on the same account.
+  balanceFloorTinybars: Number(process.env.BALANCE_FLOOR_TINYBARS ?? 100_000_000), // 1 HBAR
 };
 
 export class Budget {
@@ -23,6 +26,16 @@ export class Budget {
     private readonly maxPricePerCallTinybars: number,
     private readonly maxCalls: number,
   ) {}
+
+  /** Throws if paying priceTinybars would drop the account below the balance floor. */
+  assertBalanceFloor(currentBalanceTinybars: number, priceTinybars: number, floorTinybars: number): void {
+    if (currentBalanceTinybars - priceTinybars < floorTinybars) {
+      throw new Error(
+        `paying ${priceTinybars} tinybars would drop the account balance (${currentBalanceTinybars}) ` +
+          `below the reserve floor (${floorTinybars}) — refusing`,
+      );
+    }
+  }
 
   /** Throws if paying priceTinybars would violate a guardrail. Call before every payment. */
   assertCanSpend(priceTinybars: number): void {

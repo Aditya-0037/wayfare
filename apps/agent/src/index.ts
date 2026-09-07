@@ -2,7 +2,7 @@ import "dotenv/config";
 import { x402Client } from "@x402/core/client";
 import { decodePaymentResponseHeader } from "@x402/core/http";
 import { wrapFetchWithPayment } from "@x402/fetch";
-import { createClientHederaSigner, PrivateKey } from "@x402/hedera";
+import { AccountBalanceQuery, AccountId, Client, createClientHederaSigner, PrivateKey } from "@x402/hedera";
 import { ExactHederaScheme } from "@x402/hedera/exact/client";
 import { config, Budget } from "./config.js";
 import { discoverAndAssess } from "./discover.js";
@@ -37,6 +37,15 @@ async function main() {
   }
 
   budget.assertCanSpend(chosen.priceTinybars);
+
+  console.log("[agent] checking the real on-chain balance against the reserve floor ...");
+  const balanceCheckClient = Client.forTestnet().setOperator(
+    AccountId.fromString(config.payerAccountId),
+    PrivateKey.fromStringECDSA(config.payerPrivateKey),
+  );
+  const balance = await new AccountBalanceQuery().setAccountId(config.payerAccountId).execute(balanceCheckClient);
+  balanceCheckClient.close();
+  budget.assertBalanceFloor(balance.hbars.toTinybars().toNumber(), chosen.priceTinybars, config.balanceFloorTinybars);
 
   const signer = createClientHederaSigner(config.payerAccountId, PrivateKey.fromStringECDSA(config.payerPrivateKey), {
     network: "hedera:testnet",
