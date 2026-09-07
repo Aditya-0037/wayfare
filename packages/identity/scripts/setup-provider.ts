@@ -122,6 +122,24 @@ const specs: Record<string, ProviderSpec> = {
       "Speaks x402 v2 exact scheme over Blocky402.",
     webEndpoint: "http://localhost:4001",
   },
+  deep: {
+    label: "deep",
+    agentContext:
+      "Thorough text summarizer. Scores every sentence by document-wide word frequency and keeps " +
+      "the top-ranked ~30% in original order. Higher quality than swift, priced by input size " +
+      "(bucketed: small/medium/large). Network: hedera:testnet. Asset: HBAR (0.0.0). " +
+      "Speaks x402 v2 exact scheme over Blocky402. Quote a bucket and execute_path first.",
+    webEndpoint: "http://localhost:4002",
+  },
+  niche: {
+    label: "niche",
+    agentContext:
+      "Only summarizes markdown-style lists (bullet or numbered lines) by flattening them into " +
+      "a clean summary. Rejects anything else at quote time with a 422 — no charge for input " +
+      "outside its domain. Flat fee. Network: hedera:testnet. Asset: HBAR (0.0.0). " +
+      "Speaks x402 v2 exact scheme over Blocky402.",
+    webEndpoint: "http://localhost:4003",
+  },
 };
 
 const spec = specs[label];

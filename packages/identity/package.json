@@ -3,10 +3,13 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
   "scripts": {
     "register-root": "tsx scripts/register-wayfare-eth.ts",
     "setup-provider": "tsx scripts/setup-provider.ts",
     "resolve": "tsx scripts/resolve-provider.ts",
+    "discover": "tsx scripts/discover-providers.ts",
     "verify-eac": "tsx scripts/verify-eac.ts"
   },
   "dependencies": {
