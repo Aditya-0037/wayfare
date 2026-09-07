@@ -23,7 +23,11 @@ This README tracks what's actually built, not what's planned.
 - [x] M6 — receipts. Every settled call anchors to one HCS topic (provider ENS name,
       quote id, amount, tx id, result hash, timestamp), independently checkable on
       Mirror Node: https://testnet.mirrornode.hedera.com/api/v1/topics/0.0.10403773/messages
-- [ ] M5, M7 — M9: not started
+- [x] M8 — guardrails. Four hard limits enforced before every payment: max total spend, max
+      price per call, max calls, and a balance floor checked against the *real* on-chain
+      Hedera balance (not a local counter). A run with nothing affordable, or one that would
+      drain the reserve, refuses before ever calling `fetchWithPayment` — never after.
+- [ ] M5, M7, M9: not started
 
 ## Layout
 
