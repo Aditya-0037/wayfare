@@ -25,8 +25,8 @@ export default function ProofBand() {
       <div className="mx-auto max-w-7xl px-6">
         <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
           <div>
-            <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">Nothing here is mocked</h2>
-            <p className="mt-3 max-w-xl text-haze">Every claim links to a public ledger you can check yourself.</p>
+            <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">Independently verifiable</h2>
+            <p className="mt-3 max-w-xl text-haze">Every claim below links to a public ledger record you can check yourself.</p>
           </div>
         </div>
 

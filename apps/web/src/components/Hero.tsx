@@ -49,7 +49,7 @@ export default function Hero() {
           >
             Give Wayfare a task and a budget. It resolves sellers at runtime over ENS, gets
             live quotes, picks on price and quality, pays per call on Hedera, and anchors a
-            receipt to HCS for every provider it ever deals with. Nothing here is mocked.
+            receipt to HCS for every provider it ever deals with.
           </motion.p>
 
           <motion.div initial="hidden" animate="show" custom={3} variants={fadeUp} className="mt-9 flex flex-wrap items-center gap-4">

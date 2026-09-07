@@ -51,8 +51,8 @@ export default function RunConsole() {
           <div>
             <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">Run it yourself</h2>
             <p className="mt-3 max-w-xl text-haze">
-              This talks to the live agent over WebSocket — every event below is broadcast
-              straight from the server. Nothing rendered here is computed in the browser.
+              Connects to the live agent over WebSocket. Every event below is broadcast
+              straight from the server, in real time.
             </p>
           </div>
           <div className="flex items-center gap-2 rounded-full border border-edge/10 bg-panel/60 px-3 py-1.5 text-xs text-haze">
