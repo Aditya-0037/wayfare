@@ -4,6 +4,7 @@ import Roster from "./Roster";
 import Reasoning from "./Reasoning";
 import Ledger from "./Ledger";
 import ResultPanel from "./ResultPanel";
+import AgentStage from "./AgentStage";
 
 const samples = [
   {
@@ -110,6 +111,10 @@ export default function RunConsole() {
               from <code className="font-mono">apps/agent</code>: <code className="font-mono">npm run serve</code>), then reconnect.
             </p>
           )}
+        </div>
+
+        <div className="mt-6">
+          <AgentStage providers={providerList} chosen={chosen} runEnded={phase === "success" || phase === "failed" || phase === "refused"} />
         </div>
 
         {result !== null && result !== undefined && <ResultPanel result={result} />}
