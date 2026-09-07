@@ -94,15 +94,19 @@ export default function RunConsole() {
               )}
             </div>
             <button
-              onClick={connection === "idle" || connection === "closed" ? connect : handleRun}
-              disabled={busy || (!text.trim() && connection === "open")}
+              onClick={connection === "open" ? handleRun : connect}
+              disabled={connection === "connecting" || busy || (connection === "open" && !text.trim())}
               className="rounded-full bg-signal px-6 py-2.5 text-sm font-semibold text-onaccent shadow-glow transition hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {connection === "idle" || connection === "closed"
-                ? "Connect to agent"
-                : busy
+              {connection === "open"
+                ? busy
                   ? "Running…"
-                  : "Start run"}
+                  : "Start run"
+                : connection === "connecting"
+                  ? "Connecting…"
+                  : connection === "error"
+                    ? "Retry connection"
+                    : "Connect to agent"}
             </button>
           </div>
           {connection === "error" && (
