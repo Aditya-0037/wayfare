@@ -118,19 +118,17 @@ app.post("/v1/execute", (req, res) => {
     res.status(400).json({ error: "text is required" });
     return;
   }
-  if (quoteId) {
-    const quote = quotes.get(quoteId);
-    if (!quote) {
-      res.status(400).json({ error: "unknown quote_id" });
-      return;
-    }
-    if (quote.expiresAt < Date.now()) {
-      quotes.delete(quoteId);
-      res.status(400).json({ error: "quote expired" });
-      return;
-    }
-    quotes.delete(quoteId);
+  const quote = quoteId ? quotes.get(quoteId) : undefined;
+  if (!quote) {
+    res.status(400).json({ error: "unknown or missing quote_id — call /v1/quote first" });
+    return;
   }
+  if (quote.expiresAt < Date.now()) {
+    quotes.delete(quoteId);
+    res.status(400).json({ error: "quote expired" });
+    return;
+  }
+  quotes.delete(quoteId);
 
   const summary = leadSummary(text, 2);
   res.json({
