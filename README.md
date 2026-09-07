@@ -15,7 +15,9 @@ This README tracks what's actually built, not what's planned.
 - [x] M2 — ENS resolution. `wayfare.eth` and `swift.wayfare.eth` are registered on real
       ENSv2 (beta) on Sepolia, resolving live via `packages/identity`. `wayfare.reputation`
       is gated by Enhanced Access Control — see `packages/identity/README.md`.
-- [ ] M3 — M9: not started
+- [~] M4 — three providers live and independently proven with real payments (swift, deep,
+      niche). Choice logic (agent picks between them against budget) is next, alongside M3.
+- [ ] M3, M5 — M9: not started
 
 ## Layout
 
@@ -24,7 +26,8 @@ apps/
   agent/               the agent runtime (M1: single hardcoded paid call)
   providers/
     swift/              built — fast/cheap text summarizer, x402-gated
-    deep/, niche/        not yet built (M4)
+    deep/                built — thorough, metered by input size (bucketed pricing)
+    niche/               built — only handles markdown lists, fails loudly (422) otherwise
   web/                   not yet built (M7)
 packages/
   identity/              built — ENS resolution + setup, real ENSv2 beta on Sepolia
@@ -32,8 +35,12 @@ packages/
   receipts/              not yet built (M6) — HCS receipts
 ```
 
-Task domain for the three providers: text summarization. `swift` returns the
-first two sentences verbatim (cheap, shallow). `deep` and `niche` are not yet built.
+Task domain for the three providers: text summarization.
+- `swift` — first two sentences verbatim. Cheap, shallow, flat fee.
+- `deep` — frequency-ranked extractive summary over the whole input. Slower, better, priced
+  by a bucketed input-size tier (small/medium/large).
+- `niche` — only summarizes markdown-style lists. Rejects anything else at quote time with a
+  422, before any payment — it doesn't guess outside its domain.
 
 ## Payment stack
 
