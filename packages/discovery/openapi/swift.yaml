@@ -1,0 +1,126 @@
+openapi: 3.1.0
+info:
+  title: swift (Wayfare)
+  version: "1.0.0"
+  description: >
+    Fast, shallow text summarizer. Returns the first two sentences of the input verbatim.
+    Flat fee, x402-gated on Hedera testnet via Blocky402. ENS identity: swift.wayfare.eth.
+servers:
+  - url: http://localhost:4001
+    description: local testnet instance (replace with a public URL once deployed)
+paths:
+  /health:
+    get:
+      operationId: getHealth
+      summary: Liveness, price schedule, capability declaration
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: ok }
+                  provider: { type: string, example: swift }
+                  trait: { type: string }
+                  task: { type: string, example: text-summarization }
+                  method: { type: string, example: lead-sentence-extraction }
+                  pricing:
+                    type: object
+                    properties:
+                      model: { type: string, example: flat }
+                      base_tinybars: { type: integer }
+                      asset: { type: string, example: "0.0.0" }
+                      network: { type: string, example: "hedera:testnet" }
+  /.well-known/agent-card:
+    get:
+      operationId: getAgentCard
+      summary: Machine-readable capability description
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AgentCard" }
+  /v1/quote:
+    post:
+      operationId: createQuote
+      summary: Get a price quote for summarizing a piece of text
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text: { type: string }
+                input_spec:
+                  type: object
+                  properties:
+                    char_count: { type: integer }
+      responses:
+        "200":
+          description: Quote issued
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Quote" }
+        "400":
+          description: Missing text / char_count
+  /v1/execute:
+    post:
+      operationId: execute
+      summary: Summarize the text. x402-gated — returns 402 until payment is attached.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [quote_id, text]
+              properties:
+                quote_id: { type: string }
+                text: { type: string }
+      responses:
+        "200":
+          description: Summary produced
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  provider: { type: string, example: swift }
+                  method: { type: string, example: lead-sentence-extraction }
+                  summary: { type: string }
+        "402":
+          description: >
+            Payment required (x402 v2, exact scheme, Hedera testnet). The PAYMENT-REQUIRED
+            header carries the base64-encoded payment requirements (amount, asset, payTo,
+            facilitator fee-payer). See https://x402.gitbook.io/x402/.
+        "400":
+          description: Unknown or expired quote_id
+components:
+  schemas:
+    Quote:
+      type: object
+      properties:
+        quote_id: { type: string, format: uuid }
+        price_tinybars: { type: integer }
+        asset: { type: string, example: "0.0.0" }
+        network: { type: string, example: "hedera:testnet" }
+        expires_at: { type: string, format: date-time }
+    AgentCard:
+      type: object
+      properties:
+        name: { type: string, example: swift }
+        ensName: { type: string, example: swift.wayfare.eth }
+        description: { type: string }
+        task: { type: string, example: text-summarization }
+        trait: { type: string }
+        pricing: { type: object }
+        endpoints:
+          type: object
+          properties:
+            quote: { type: string, example: /v1/quote }
+            execute: { type: string, example: /v1/execute }
+        protocol: { type: string, example: x402/hedera }

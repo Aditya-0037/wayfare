@@ -1,0 +1,136 @@
+openapi: 3.1.0
+info:
+  title: niche (Wayfare)
+  version: "1.0.0"
+  description: >
+    Only summarizes markdown-style lists (bullet or numbered lines) by flattening them
+    into a clean summary. Rejects anything else at quote time with a 422 — never charges
+    for input outside its domain. Flat fee, x402-gated on Hedera testnet via Blocky402.
+    ENS identity: niche.wayfare.eth.
+servers:
+  - url: http://localhost:4003
+    description: local testnet instance (replace with a public URL once deployed)
+paths:
+  /health:
+    get:
+      operationId: getHealth
+      summary: Liveness, price schedule, capability declaration
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: ok }
+                  provider: { type: string, example: niche }
+                  trait: { type: string }
+                  task: { type: string, example: text-summarization }
+                  method: { type: string, example: list-item-extraction }
+                  pricing:
+                    type: object
+                    properties:
+                      model: { type: string, example: flat }
+                      base_tinybars: { type: integer }
+                      asset: { type: string, example: "0.0.0" }
+                      network: { type: string, example: "hedera:testnet" }
+  /.well-known/agent-card:
+    get:
+      operationId: getAgentCard
+      summary: Machine-readable capability description
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AgentCard" }
+  /v1/quote:
+    post:
+      operationId: createQuote
+      summary: >
+        Validate that the input is a markdown-style list and get a price quote. Rejects
+        with 422 immediately if the input isn't list-structured — before any payment.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text]
+              properties:
+                text: { type: string }
+      responses:
+        "200":
+          description: Quote issued
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Quote" }
+        "400":
+          description: Missing text
+        "422":
+          description: Input isn't a markdown-style list — outside niche's domain
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string }
+  /v1/execute:
+    post:
+      operationId: execute
+      summary: Flatten the list into a summary. x402-gated — returns 402 until payment is attached.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [quote_id]
+              properties:
+                quote_id: { type: string }
+      responses:
+        "200":
+          description: Summary produced
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  provider: { type: string, example: niche }
+                  method: { type: string, example: list-item-extraction }
+                  summary: { type: string }
+                  item_count: { type: integer }
+        "402":
+          description: >
+            Payment required (x402 v2, exact scheme, Hedera testnet). See
+            https://x402.gitbook.io/x402/.
+        "400":
+          description: Unknown or expired quote_id
+        "422":
+          description: The quoted text no longer validates as a list (defensive re-check)
+components:
+  schemas:
+    Quote:
+      type: object
+      properties:
+        quote_id: { type: string, format: uuid }
+        price_tinybars: { type: integer }
+        asset: { type: string, example: "0.0.0" }
+        network: { type: string, example: "hedera:testnet" }
+        expires_at: { type: string, format: date-time }
+    AgentCard:
+      type: object
+      properties:
+        name: { type: string, example: niche }
+        ensName: { type: string, example: niche.wayfare.eth }
+        description: { type: string }
+        task: { type: string, example: text-summarization }
+        trait: { type: string }
+        pricing: { type: object }
+        endpoints:
+          type: object
+          properties:
+            quote: { type: string, example: /v1/quote }
+            execute: { type: string, example: /v1/execute }
+        protocol: { type: string, example: x402/hedera }

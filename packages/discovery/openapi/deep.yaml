@@ -1,0 +1,138 @@
+openapi: 3.1.0
+info:
+  title: deep (Wayfare)
+  version: "1.0.0"
+  description: >
+    Thorough text summarizer. Scores every sentence by document-wide word frequency and
+    keeps the top-ranked ~30% in original order. Priced by a bucketed input-size tier
+    (small/medium/large). x402-gated on Hedera testnet via Blocky402. ENS identity:
+    deep.wayfare.eth.
+servers:
+  - url: http://localhost:4002
+    description: local testnet instance (replace with a public URL once deployed)
+paths:
+  /health:
+    get:
+      operationId: getHealth
+      summary: Liveness, price schedule, capability declaration
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: ok }
+                  provider: { type: string, example: deep }
+                  trait: { type: string }
+                  task: { type: string, example: text-summarization }
+                  method: { type: string, example: frequency-ranked-extraction }
+                  pricing:
+                    type: object
+                    properties:
+                      model: { type: string, example: metered }
+                      base_tinybars: { type: integer }
+                      per_char_tinybars: { type: integer }
+                      asset: { type: string, example: "0.0.0" }
+                      network: { type: string, example: "hedera:testnet" }
+  /.well-known/agent-card:
+    get:
+      operationId: getAgentCard
+      summary: Machine-readable capability description
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AgentCard" }
+  /v1/quote:
+    post:
+      operationId: createQuote
+      summary: Get a metered price quote and the bucket/execute path to use
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text: { type: string }
+                input_spec:
+                  type: object
+                  properties:
+                    char_count: { type: integer }
+      responses:
+        "200":
+          description: Quote issued
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Quote" }
+        "400":
+          description: Missing text / char_count
+  /v1/execute/{bucket}:
+    post:
+      operationId: execute
+      summary: >
+        Summarize the text. x402-gated — returns 402 until payment is attached. The bucket
+        in the path must match the one returned by /v1/quote (small, medium, or large);
+        price is fixed per bucket.
+      parameters:
+        - name: bucket
+          in: path
+          required: true
+          schema: { type: string, enum: [small, medium, large] }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [quote_id, text]
+              properties:
+                quote_id: { type: string }
+                text: { type: string }
+      responses:
+        "200":
+          description: Summary produced
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  provider: { type: string, example: deep }
+                  method: { type: string, example: frequency-ranked-extraction }
+                  summary: { type: string }
+        "402":
+          description: >
+            Payment required (x402 v2, exact scheme, Hedera testnet), amount fixed to this
+            bucket's price. See https://x402.gitbook.io/x402/.
+        "400":
+          description: Unknown/expired quote_id, or bucket doesn't match the quote
+components:
+  schemas:
+    Quote:
+      type: object
+      properties:
+        quote_id: { type: string, format: uuid }
+        price_tinybars: { type: integer }
+        bucket: { type: string, enum: [small, medium, large] }
+        execute_path: { type: string, example: /v1/execute/medium }
+        asset: { type: string, example: "0.0.0" }
+        network: { type: string, example: "hedera:testnet" }
+        expires_at: { type: string, format: date-time }
+    AgentCard:
+      type: object
+      properties:
+        name: { type: string, example: deep }
+        ensName: { type: string, example: deep.wayfare.eth }
+        description: { type: string }
+        task: { type: string, example: text-summarization }
+        trait: { type: string }
+        pricing: { type: object }
+        endpoints:
+          type: object
+          properties:
+            quote: { type: string, example: /v1/quote }
+            execute: { type: string, example: "/v1/execute/<bucket returned by quote>" }
+        protocol: { type: string, example: x402/hedera }
