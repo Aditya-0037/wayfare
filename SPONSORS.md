@@ -90,9 +90,18 @@ pending a real deployment. All three registered and confirmed via `baz gateway l
 | deep | `ydhc6cktzjfhpbaymi55wf7xx4` | `https://ydhc6cktzjfhpbaymi55wf7xx4.bazgateway.com/mcp` |
 | niche | `xo32sarhtfcfzcqzy7ii2we2d4` | `https://xo32sarhtfcfzcqzy7ii2we2d4.bazgateway.com/mcp` |
 
-**Caveat:** these gateways currently forward to `trycloudflare.com` tunnel URLs pointed at
-providers running locally — they'll go dead if those processes/tunnels stop. Fine for
-testing the registration flow; needs a real deployment before final submission.
+**Real deployment now exists** (Render, free tier, auto-deploys from `master`):
+`https://wayfare-swift.onrender.com`, `https://wayfare-deep.onrender.com`,
+`https://wayfare-niche.onrender.com`. ENS `agent-endpoint[web]` for all three now points
+at these — verified by running the actual agent end to end against them (discover, quote,
+decline niche on non-list input, pick deep, pay, HCS receipt, reputation update), not just
+a health check.
+
+**Remaining gap:** the three gateways above were registered *before* the Render URLs
+existed, so they still forward to the `trycloudflare.com` tunnels. The `baz` CLI has no
+`gateway update` or `delete` — only `add`/`list` — so re-pointing them needs the dashboard.
+Left the tunnels running for now so the existing registrations stay functional; re-point
+(or delete-and-recreate) via the dashboard before final submission.
 
 **Recipes: still open.** The CLI has no `recipe` subcommand (gateways/curl/wallet/grants
 only) — Recipes are dashboard-only for now. The raw API's `/v1/recipes` endpoints also

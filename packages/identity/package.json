@@ -12,7 +12,8 @@
     "discover": "tsx scripts/discover-providers.ts",
     "verify-eac": "tsx scripts/verify-eac.ts",
     "read-reputation": "tsx scripts/read-reputation.ts",
-    "fund-recorder": "tsx scripts/fund-recorder.ts"
+    "fund-recorder": "tsx scripts/fund-recorder.ts",
+    "update-endpoint": "tsx scripts/update-endpoint.ts"
   },
   "dependencies": {
     "@ensdomains/ensjs": "5.0.0-sepolia-fix.1",

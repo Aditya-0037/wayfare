@@ -99,3 +99,16 @@ it can afford, and pays it. Run it again with a small budget —
 `MAX_TOTAL_TINYBARS=150000 MAX_PRICE_PER_CALL_TINYBARS=150000 npx tsx src/index.ts "..."`
 — and it picks swift instead, logging exactly why. Every run prints a HashScan link and a
 Mirror Node link for the HCS receipt it anchored.
+
+## Deployment
+
+All three providers run for real on Render (free tier, auto-deploys from `master`):
+
+- `https://wayfare-swift.onrender.com`
+- `https://wayfare-deep.onrender.com`
+- `https://wayfare-niche.onrender.com`
+
+ENS `agent-endpoint[web]` for each provider points at its Render URL — the agent's
+discovery in the steps above already resolves and calls these, not localhost. Free-tier
+services on Render spin down after inactivity, so the first call after a while sleeps for
+~30-60s before responding.
