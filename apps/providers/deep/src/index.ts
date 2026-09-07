@@ -77,6 +77,14 @@ const routes: RoutesConfig = Object.fromEntries(
 const app = express();
 app.use(express.json({ limit: "1mb" }));
 
+app.get("/", (_req, res) => {
+  res.json({
+    provider: "deep",
+    message: "This is an x402-gated API, not a website — there's nothing to render at /.",
+    try: ["/health", "/.well-known/agent-card"],
+  });
+});
+
 app.get("/health", (_req, res) => {
   res.json({
     status: "ok",
