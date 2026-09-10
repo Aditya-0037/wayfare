@@ -117,12 +117,32 @@ something to automate — that's a decision for the account owner. The registrat
 fully live needs you to flip it to `active` via the dashboard once payout is configured,
 if you want it actually callable rather than just registered.
 
-**Recipes: still open.** The CLI has no `recipe` subcommand (gateways/curl/wallet/grants
-only) — Recipes are dashboard-only for now. The raw API's `/v1/recipes` endpoints also
-reject both the dashboard API key *and* the CLI's own session token in every format tried,
-so this one genuinely needs the dashboard's Recipes tab by hand. This is what both
-remaining prizes need: a Recipe combining one of the three gateways above with an
-already-listed one (PurpleAir or Api Ninjas were seen live on the platform).
+**Recipes: still open, now confirmed exactly why.** `POST /v1/recipes` is real and fully
+documented in Bazantic's own OpenAPI spec (`https://api.bazantic.com/openapi.json`) — a
+proper LLM-recipe schema (prompt template, model choice, `tool_bindings` referencing
+`gateway_slug` + `tool_name`). Its `security` entry names a `BearerAuth` scheme, but
+that's a documentation mislabel: every credential this project holds was tried against it
+and none work as a bearer/API-key credential for a *write*:
+
+- `Authorization: Bearer <dashboard JWT key>` → `invalid_credentials: Unrecognized API key`
+- `Authorization: Bearer <CLI session token>` → same
+- `x-api-key: <dashboard JWT key>` → `missing_credentials: Authentication required`
+- `x-api-key: <CLI session token>` → same, even though `whoami` shows this exact token
+  carries `recipe:write` scope and `x-api-key` works fine for *reads* (confirmed against
+  `GET /v1/gateways` and `GET /v1/gateways/{slug}/methods`)
+
+Read-only endpoints on this API accept an API key; this specific write doesn't accept any
+credential this project can hold — it needs an authenticated *browser session cookie* at
+bazantic.com, which is a fundamentally different auth path the CLI was never built to
+carry. That's also why `/v1/gateways/{slug}/methods` reports "not found" for all three of
+our gateways while returning real data for an already-active one (Api Ninjas,
+`3pvsfq5q4nakjfs24et5czmn6q`) — draft gateways aren't indexed for tool-binding lookups
+either, so even a successful Recipe write would need our gateways `active` first (see the
+draft/payout finding above). Two independent blockers, same root cause: `active` status.
+
+This is what both remaining prizes need: a Recipe combining one of the three gateways
+above with an already-listed one (Api Ninjas' real slug is `3pvsfq5q4nakjfs24et5czmn6q`,
+method `GET /v1/new-endpoint` — confirmed live and callable).
 
 **Status:** all three gateways registered against real, live provider URLs (satisfies
 "Agentify a New API"'s gateway requirement on the letter — deploy a Gateway for a
