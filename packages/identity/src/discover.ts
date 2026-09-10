@@ -12,6 +12,24 @@ const NAME_REGISTERED_EVENT = parseAbiItem(
 // on-chain event logs, not written into this codebase.
 const DISCOVERY_FROM_BLOCK = 11_652_400n;
 
+// The free, shared public Sepolia RPC endpoint occasionally serves a stale or otherwise-off
+// read under load (observed directly: a real registered subregistry read back as the zero
+// address, resolving in ~250ms — too fast to be a real round trip — then correctly on the
+// very next attempt seconds later). One retry after a short pause is cheap and turns that
+// transient flake into a non-event instead of a false "no providers found".
+async function withRetry<T>(fn: () => Promise<T>, attempts = 3): Promise<T> {
+  let lastErr: unknown;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastErr = err;
+      if (i < attempts - 1) await new Promise((r) => setTimeout(r, 400 * (i + 1)));
+    }
+  }
+  throw lastErr;
+}
+
 /**
  * Real on-chain discovery: read every NameRegistered event ever emitted by the parent's
  * subregistry, then resolve each labeled name for real records. No provider name or URL is
@@ -22,20 +40,35 @@ export async function discoverProviders(): Promise<AgentRecord[]> {
   const client = publicClient();
   const parentLabel = ensParentName.replace(/\.eth$/, "");
 
-  const subregistryAddress = await client.readContract({
-    address: contracts.ensV2EthRegistry.address,
-    abi: REGISTRY_ABI,
-    functionName: "getSubregistry",
-    args: [parentLabel],
-  });
+  const readSubregistry = () =>
+    withRetry(() =>
+      client.readContract({
+        address: contracts.ensV2EthRegistry.address,
+        abi: REGISTRY_ABI,
+        functionName: "getSubregistry",
+        args: [parentLabel],
+      }),
+    );
+
+  // A real "not registered" parent and a flaky misread from the RPC pool's load balancer
+  // look identical from here (a fast, successful, wrong zero address, not a thrown error) —
+  // a handful of spaced-out re-reads before this code believes it costs a couple of seconds
+  // at worst and turns an intermittent false negative into a non-event.
+  let subregistryAddress = await readSubregistry();
+  for (let i = 0; subregistryAddress === ZERO_ADDRESS && i < 4; i++) {
+    await new Promise((r) => setTimeout(r, 500 * (i + 1)));
+    subregistryAddress = await readSubregistry();
+  }
   if (subregistryAddress === ZERO_ADDRESS) return [];
 
-  const logs = await client.getLogs({
-    address: subregistryAddress,
-    event: NAME_REGISTERED_EVENT,
-    fromBlock: DISCOVERY_FROM_BLOCK,
-    toBlock: "latest",
-  });
+  const logs = await withRetry(() =>
+    client.getLogs({
+      address: subregistryAddress,
+      event: NAME_REGISTERED_EVENT,
+      fromBlock: DISCOVERY_FROM_BLOCK,
+      toBlock: "latest",
+    }),
+  );
 
   const labels = [...new Set(logs.map((log) => log.args.label).filter((label): label is string => Boolean(label)))];
 
