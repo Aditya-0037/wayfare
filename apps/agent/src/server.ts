@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { createServer } from "node:http";
 import { WebSocketServer, type WebSocket } from "ws";
 import { runAgent } from "./runAgent.js";
 import type { AgentEvent } from "./events.js";
@@ -14,7 +15,20 @@ const MAX_TEXT_LENGTH = Number(process.env.MAX_TEXT_LENGTH ?? 4000);
 const MIN_SECONDS_BETWEEN_RUNS = Number(process.env.MIN_SECONDS_BETWEEN_RUNS ?? 0);
 const LIFETIME_MAX_TINYBARS = process.env.LIFETIME_MAX_TINYBARS ? Number(process.env.LIFETIME_MAX_TINYBARS) : Infinity;
 
-const wss = new WebSocketServer({ port: PORT });
+// A bare `ws` server with no HTTP handler answers a plain GET with a raw "426 Upgrade
+// Required" — which is correct for a WebSocket-only endpoint, but Render's deploy health
+// check wants an unambiguous 200 to confirm the new instance is actually up before cutting
+// traffic over. One deploy genuinely failed waiting on this before /healthz existed.
+const httpServer = createServer((req, res) => {
+  if (req.url === "/healthz") {
+    res.writeHead(200, { "content-type": "application/json" });
+    res.end(JSON.stringify({ status: "ok" }));
+    return;
+  }
+  res.writeHead(426, { "content-type": "text/plain" });
+  res.end("This is a WebSocket endpoint. Connect over ws:// or wss://.");
+});
+const wss = new WebSocketServer({ server: httpServer });
 let running = false;
 let lastRunAt = 0;
 let lifetimeSpentTinybars = 0;
@@ -53,7 +67,6 @@ wss.on("connection", (socket: WebSocket) => {
     }
 
     const secondsSinceLastRun = (Date.now() - lastRunAt) / 1000;
-    console.log(`[agent] cooldown check: lastRunAt=${lastRunAt} secondsSinceLastRun=${secondsSinceLastRun} threshold=${MIN_SECONDS_BETWEEN_RUNS}`);
     if (lastRunAt > 0 && secondsSinceLastRun < MIN_SECONDS_BETWEEN_RUNS) {
       const wait = Math.ceil(MIN_SECONDS_BETWEEN_RUNS - secondsSinceLastRun);
       socket.send(JSON.stringify({ type: "run_refused", reason: `rate limited — try again in ${wait}s` }));
@@ -78,7 +91,9 @@ wss.on("connection", (socket: WebSocket) => {
   });
 });
 
-console.log(`[agent] WebSocket server listening on ws://localhost:${PORT}`);
-console.log('[agent] send {"type":"run","text":"..."} to start a run; every client sees every event');
-if (MIN_SECONDS_BETWEEN_RUNS > 0) console.log(`[agent] rate limit: ${MIN_SECONDS_BETWEEN_RUNS}s between runs`);
-if (Number.isFinite(LIFETIME_MAX_TINYBARS)) console.log(`[agent] lifetime spend cap: ${LIFETIME_MAX_TINYBARS} tinybars`);
+httpServer.listen(PORT, () => {
+  console.log(`[agent] WebSocket server listening on ws://localhost:${PORT} (health check at /healthz)`);
+  console.log('[agent] send {"type":"run","text":"..."} to start a run; every client sees every event');
+  if (MIN_SECONDS_BETWEEN_RUNS > 0) console.log(`[agent] rate limit: ${MIN_SECONDS_BETWEEN_RUNS}s between runs`);
+  if (Number.isFinite(LIFETIME_MAX_TINYBARS)) console.log(`[agent] lifetime spend cap: ${LIFETIME_MAX_TINYBARS} tinybars`);
+});
