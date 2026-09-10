@@ -1,18 +1,26 @@
 # Demo script
 
-~2.5 minutes. Screen-record `http://localhost:5173` with the full stack running (three
-providers + `npm run serve` from `apps/agent`). Narration is a starting point, not a
-script to read robotically — say it in your own words, but hit every beat, since each one
-maps to a specific judged claim.
+~2.5 minutes. Screen-record either `https://wayfare-web.onrender.com` (the public instance
+— nothing to start, just open it) or `http://localhost:5173` with the full stack running
+locally. Narration is a starting point, not a script to read robotically — say it in your
+own words, but hit every beat, since each one maps to a specific judged claim.
 
 ## Before you hit record
 
+**Public instance (simpler):** just open `https://wayfare-web.onrender.com` — it already
+points at the live public agent. That agent runs tighter guardrails than local dev (a
+cooldown between runs, a lower spend cap) since it's reachable by anyone, so if a run
+refuses for budget reasons, that's the safeguard working as intended, not a bug — re-run
+locally for the budget-comparison beat below if you want a bigger number on screen.
+
+**Local instead, if you want full control over budgets for Beat 3:**
 - All three providers running (`npm run dev:swift` / `dev:deep` / `dev:niche`).
 - Agent WS server running (`apps/agent`: `npm run serve`).
 - Frontend running (`apps/web`: `npm run dev`), page loaded, scrolled to the top.
-- Have two browser tabs ready: the app, and one pinned to
-  `https://testnet.mirrornode.hedera.com/api/v1/topics/0.0.10403773/messages` (receipts)
-  or a HashScan tab, to cut to after the run.
+
+Either way, have a second browser tab ready, pinned to
+`https://testnet.mirrornode.hedera.com/api/v1/topics/0.0.10403773/messages` (receipts)
+or a HashScan tab, to cut to after the run.
 
 ## Beat 1 — the claim (0:00–0:15)
 
