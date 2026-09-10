@@ -144,6 +144,17 @@ This is what both remaining prizes need: a Recipe combining one of the three gat
 above with an already-listed one (Api Ninjas' real slug is `3pvsfq5q4nakjfs24et5czmn6q`,
 method `GET /v1/new-endpoint` — confirmed live and callable).
 
+**Confirmed a fifth and final way, hands-on, in the actual dashboard:** with a real
+authenticated session, the Recipe builder's own natural-language draft step never surfaced
+any Wayfare gateway as a usable tool for a task explicitly asking for one — it suggested
+third-party APIs (Anthropic, OpenAI, Cohere, ENS Metadata) instead. The builder also has a
+manual override, "Tools this Recipe can call" → "Pick a gateway", a plain searchable list
+of every gateway on the platform (Api Ninjas shows up in it immediately). Searching that
+list for "wayfare" returns **"No gateways match."** This isn't an AI-relevance miss or an
+auth gap — the platform's own plain gateway list excludes `draft` gateways from Recipe
+tool-binding entirely, full stop. No further attempt fixes this from our side; only
+flipping the gateways to `active` (which needs the payout account, see above) would.
+
 **Status:** all three gateways registered against real, live provider URLs (satisfies
 "Agentify a New API"'s gateway requirement on the letter — deploy a Gateway for a
 previously-unavailable API). They're not yet *callable* through Bazantic's own routing —
