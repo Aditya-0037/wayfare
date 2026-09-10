@@ -53,6 +53,7 @@ wss.on("connection", (socket: WebSocket) => {
     }
 
     const secondsSinceLastRun = (Date.now() - lastRunAt) / 1000;
+    console.log(`[agent] cooldown check: lastRunAt=${lastRunAt} secondsSinceLastRun=${secondsSinceLastRun} threshold=${MIN_SECONDS_BETWEEN_RUNS}`);
     if (lastRunAt > 0 && secondsSinceLastRun < MIN_SECONDS_BETWEEN_RUNS) {
       const wait = Math.ceil(MIN_SECONDS_BETWEEN_RUNS - secondsSinceLastRun);
       socket.send(JSON.stringify({ type: "run_refused", reason: `rate limited — try again in ${wait}s` }));
