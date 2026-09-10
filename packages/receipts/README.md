@@ -54,6 +54,6 @@ of the code path that published it (`packages/identity/scripts/test-hcs14-spec-e
 also checks against the spec's own worked example).
 
 ```
-npm run create-identity-topic   # one-time
+npm run create-identity-topic   # one-time, prints a topic id — put it in .env as HCS14_TOPIC_ID
 npm run publish-identities       # publishes agent + swift + deep + niche
 ```

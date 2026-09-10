@@ -10,7 +10,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        display: ["'Clash Display'", "'Space Grotesk'", "sans-serif"],
+        display: ["'Space Grotesk'", "sans-serif"],
         sans: ["'Space Grotesk'", "system-ui", "sans-serif"],
         mono: ["'JetBrains Mono'", "ui-monospace", "monospace"],
       },

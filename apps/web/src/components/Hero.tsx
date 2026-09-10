@@ -76,15 +76,15 @@ export default function Hero() {
           >
             <div>
               <dt className="text-xs uppercase tracking-wide text-wisp">Providers</dt>
-              <dd className="mt-1 font-display text-2xl font-semibold text-fg">3 live</dd>
+              <dd className="mt-1 font-display text-lg font-semibold text-fg sm:text-2xl">3 live</dd>
             </div>
             <div>
               <dt className="text-xs uppercase tracking-wide text-wisp">Discovery</dt>
-              <dd className="mt-1 font-display text-2xl font-semibold text-fg">ENS, real-time</dd>
+              <dd className="mt-1 font-display text-lg font-semibold text-fg sm:text-2xl">ENS, real-time</dd>
             </div>
             <div>
               <dt className="text-xs uppercase tracking-wide text-wisp">Receipts</dt>
-              <dd className="mt-1 font-display text-2xl font-semibold text-fg">Anchored to HCS</dd>
+              <dd className="mt-1 font-display text-lg font-semibold text-fg sm:text-2xl">Anchored to HCS</dd>
             </div>
           </motion.dl>
         </div>

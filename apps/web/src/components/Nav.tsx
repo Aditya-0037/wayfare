@@ -17,7 +17,7 @@ export default function Nav() {
           <button onClick={() => scrollTo("proof")} className="transition hover:text-fg">On-chain proof</button>
           <button onClick={() => scrollTo("console")} className="transition hover:text-fg">Run it</button>
           <a
-            href="https://github.com"
+            href="https://github.com/Aditya-0037/wayfare"
             target="_blank"
             rel="noreferrer"
             className="transition hover:text-fg"
