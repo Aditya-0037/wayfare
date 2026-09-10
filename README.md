@@ -181,3 +181,14 @@ ENS `agent-endpoint[web]` for each provider points at its Render URL — the age
 discovery in the steps above already resolves and calls these, not localhost. Free-tier
 services on Render spin down after inactivity, so the first call after a while sleeps for
 ~30-60s before responding; hitting `/health` once before a demo wakes it back up.
+
+The full interactive console is also live, no local setup needed:
+
+- **https://wayfare-web.onrender.com** — the frontend
+- `wss://wayfare-agent-u058.onrender.com` — the agent's WebSocket server it talks to
+
+This public agent instance pays from its own dedicated, minimally-funded Hedera account —
+isolated from the account used for local development — and runs with tighter guardrails
+than the local defaults (a cooldown between runs, a lifetime spend cap, a shorter max input
+length) specifically because it's reachable by anyone, not because the underlying agent
+logic changes. See `apps/agent/.env.example` for the exact knobs.
