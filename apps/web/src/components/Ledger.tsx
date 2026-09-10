@@ -29,7 +29,7 @@ export default function Ledger({ entries, budget }: { entries: LedgerEntry[]; bu
             <span>{budget.callsMade}/{budget.maxCalls} calls</span>
           </div>
           <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-fg/5">
-            <div className="h-full rounded-full bg-gradient-to-r from-signal to-signal2 transition-all duration-500" style={{ width: `${spentPct}%` }} />
+            <div className="h-full rounded-full bg-signal transition-all duration-500" style={{ width: `${spentPct}%` }} />
           </div>
           <div className="mt-2 text-xs text-wisp">Remaining: {formatHbar(budget.remainingTinybars)}</div>
         </div>

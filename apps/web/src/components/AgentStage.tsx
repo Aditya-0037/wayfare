@@ -33,8 +33,7 @@ export default function AgentStage({
   ];
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-edge/10 bg-gradient-to-b from-panel/60 to-ink/60 p-6 [perspective:1200px]">
-      <div className="pointer-events-none absolute inset-0 opacity-[0.06] [background-image:repeating-linear-gradient(0deg,#fff_0px,transparent_1px,transparent_3px)]" />
+    <div className="relative overflow-hidden rounded-2xl border border-edge/10 bg-panel/50 p-6 [perspective:1200px]">
       <div className="flex flex-wrap items-end justify-center gap-10 py-6 [transform-style:preserve-3d]" style={{ transform: "rotateX(8deg)" }}>
         {slots.map((slot) => (
           <Npc key={slot.key} slot={slot} state={byName.get(slot.key)} isChosen={chosen === slot.key} runEnded={runEnded} />
@@ -116,7 +115,7 @@ function Npc({
         {isChosen && (
           <div
             className="absolute -inset-6 -z-10 rounded-full opacity-60 blur-xl"
-            style={{ background: "radial-gradient(circle, rgb(var(--c-signal) / calc(0.35 * var(--orb-strength))), transparent 70%)" }}
+            style={{ background: "rgb(var(--c-signal) / calc(0.35 * var(--orb-strength)))" }}
           />
         )}
         {/* head */}

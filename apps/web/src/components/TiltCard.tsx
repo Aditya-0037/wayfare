@@ -44,12 +44,12 @@ export default function TiltCard({
       style={{ ...style, transition: "transform 300ms cubic-bezier(.2,.8,.2,1)" }}
       className={`group relative will-change-transform ${className}`}
     >
-      <div
-        className="pointer-events-none absolute -inset-px rounded-[inherit] opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-        style={{
-          background: `radial-gradient(280px circle at ${spot.x}% ${spot.y}%, ${glow}, transparent 70%)`,
-        }}
-      />
+      <div className="pointer-events-none absolute -inset-px overflow-hidden rounded-[inherit] opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+        <div
+          className="absolute h-[280px] w-[280px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-2xl"
+          style={{ left: `${spot.x}%`, top: `${spot.y}%`, background: glow }}
+        />
+      </div>
       {children}
     </div>
   );

@@ -62,7 +62,7 @@ export default function CompassRig() {
 
       {/* core */}
       <motion.div
-        className="absolute left-1/2 top-1/2 flex h-28 w-28 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-3xl border border-edge/10 bg-gradient-to-br from-panel to-ink shadow-card [transform-style:preserve-3d]"
+        className="absolute left-1/2 top-1/2 flex h-28 w-28 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-3xl border border-edge/10 bg-panel shadow-card [transform-style:preserve-3d]"
         animate={{ rotateY: [0, 12, 0, -12, 0], rotateX: [0, -6, 0, 6, 0] }}
         transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
       >

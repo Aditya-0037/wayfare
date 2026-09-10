@@ -37,7 +37,7 @@ export default function Hero() {
             variants={fadeUp}
             className="text-balance font-display text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl"
           >
-            An agent that <span className="bg-gradient-to-r from-signal to-signal2 bg-clip-text text-transparent">shops the open market</span> — it doesn't call a list you hardcoded.
+            An agent that <span className="text-signal">shops the open market</span> — it doesn't call a list you hardcoded.
           </motion.h1>
 
           <motion.p
