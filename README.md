@@ -86,7 +86,9 @@ settlement (see Status below).
 - [~] M5 — Bazantic. All three providers registered as real Gateways via the `baz` CLI;
       the Recipe (needed for the two remaining Bazantic prizes) is the one piece left —
       see `SPONSORS.md`.
-- [ ] M9: not started
+- [~] M9 — submission. Demo script and all four sponsor writeups drafted (`docs/`); the
+      actual video recording and the Bazantic Recipe above are the two things left, and
+      both need a human at the keyboard, not more code.
 
 ## Screenshots
 
