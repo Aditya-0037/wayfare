@@ -1,10 +1,12 @@
+import type { Icon } from "@phosphor-icons/react";
+import { Broadcast, ShoppingBag, Prohibit, Money, Receipt, Coins, ShieldCheck, Star } from "@phosphor-icons/react";
 import type { AgentEvent } from "./types";
 
 export interface Achievement {
   id: string;
   title: string;
   description: string;
-  icon: string;
+  icon: Icon;
   /** Pure check against the accumulated real event log — no synthetic state of its own. */
   check: (log: AgentEvent[]) => boolean;
 }
@@ -18,14 +20,14 @@ export const ACHIEVEMENTS: Achievement[] = [
     id: "first-contact",
     title: "First Contact",
     description: "Discovered a provider over ENS for the first time — no config file, just event logs.",
-    icon: "📡",
+    icon: Broadcast,
     check: (log) => count(log, "provider_discovered") >= 1,
   },
   {
     id: "window-shopper",
     title: "Window Shopper",
     description: "Got responses (quoted or declined) from all three providers in one run.",
-    icon: "🛍️",
+    icon: ShoppingBag,
     check: (log) => {
       let started = -1;
       for (let i = log.length - 1; i >= 0; i--) {
@@ -45,42 +47,42 @@ export const ACHIEVEMENTS: Achievement[] = [
     id: "gatekept",
     title: "Gatekept",
     description: "Watched niche reject a task at quote time — before a single tinybar moved.",
-    icon: "🚫",
+    icon: Prohibit,
     check: (log) => count(log, "quote_declined") >= 1,
   },
   {
     id: "money-where-mouth-is",
     title: "Money Where Mouth Is",
     description: "A real payment settled on Hedera testnet via x402.",
-    icon: "💸",
+    icon: Money,
     check: (log) => count(log, "payment_settled") >= 1,
   },
   {
     id: "paper-trail",
     title: "Paper Trail",
     description: "A settlement receipt got anchored to Hedera Consensus Service.",
-    icon: "🧾",
+    icon: Receipt,
     check: (log) => count(log, "receipt_recorded") >= 1,
   },
   {
     id: "penny-pincher",
     title: "Penny Pincher",
     description: "A tight budget forced the agent to pick swift over the fancier options.",
-    icon: "🪙",
+    icon: Coins,
     check: (log) => log.some((e) => e.type === "decision_made" && e.chosen === "swift"),
   },
   {
     id: "budget-ninja",
     title: "Budget Ninja",
     description: "Watched the agent refuse to spend rather than break its own guardrails.",
-    icon: "🥷",
+    icon: ShieldCheck,
     check: (log) => count(log, "run_refused") >= 1,
   },
   {
     id: "regular",
     title: "Regular",
     description: "One provider's on-chain reputation record has now seen 5+ completed calls.",
-    icon: "⭐",
+    icon: Star,
     check: (log) => log.some((e) => e.type === "reputation_updated" && e.completed_calls >= 5),
   },
 ];

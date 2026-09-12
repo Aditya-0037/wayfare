@@ -1,3 +1,4 @@
+import { Money, Receipt as ReceiptIcon, Wallet, ProhibitInset, ArrowSquareOut } from "@phosphor-icons/react";
 import { formatHbar } from "../lib/format";
 import type { LedgerEntry } from "../lib/types";
 import { EmptyPane } from "./Roster";
@@ -7,6 +8,13 @@ const kindStyle: Record<LedgerEntry["kind"], string> = {
   receipt: "bg-signal2/15 text-signal2 border-signal2/30",
   budget: "bg-fg/10 text-haze border-edge/15",
   refused: "bg-coral/15 text-coral border-coral/30",
+};
+
+const kindIcon: Record<LedgerEntry["kind"], typeof Money> = {
+  payment: Money,
+  receipt: ReceiptIcon,
+  budget: Wallet,
+  refused: ProhibitInset,
 };
 
 interface Budget {
@@ -39,23 +47,28 @@ export default function Ledger({ entries, budget }: { entries: LedgerEntry[]; bu
         <EmptyPane label="Payments and HCS receipts land here as they settle, each linking to a public ledger." />
       ) : (
         <ul className="flex flex-col gap-2">
-          {entries.map((e) => (
-            <li key={e.id} className={`rounded-xl border bg-ink/40 px-4 py-3 text-sm ${e.kind === "refused" ? "border-coral/30" : "border-edge/10"}`}>
-              <div className="flex items-center justify-between gap-2">
-                <span className={`rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-wide ${kindStyle[e.kind]}`}>
-                  {e.kind}
-                </span>
-                <span className="text-[11px] text-wisp">{new Date(e.timestamp).toLocaleTimeString()}</span>
-              </div>
-              <div className="mt-2 font-medium text-fg/90">{e.label}</div>
-              <div className="mt-1 break-all font-mono text-xs text-haze">{e.detail}</div>
-              {e.href && (
-                <a href={e.href} target="_blank" rel="noreferrer" className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-signal">
-                  View proof →
-                </a>
-              )}
-            </li>
-          ))}
+          {entries.map((e) => {
+            const KindIcon = kindIcon[e.kind];
+            return (
+              <li key={e.id} className={`rounded-xl border bg-ink/40 px-4 py-3 text-sm ${e.kind === "refused" ? "border-coral/30" : "border-edge/10"}`}>
+                <div className="flex items-center justify-between gap-2">
+                  <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-wide ${kindStyle[e.kind]}`}>
+                    <KindIcon weight="bold" className="h-3 w-3" />
+                    {e.kind}
+                  </span>
+                  <span className="text-[11px] text-wisp">{new Date(e.timestamp).toLocaleTimeString()}</span>
+                </div>
+                <div className="mt-2 font-medium text-fg/90">{e.label}</div>
+                <div className="mt-1 break-all font-mono text-xs text-haze">{e.detail}</div>
+                {e.href && (
+                  <a href={e.href} target="_blank" rel="noreferrer" className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-signal">
+                    View proof
+                    <ArrowSquareOut weight="bold" className="h-3.5 w-3.5" />
+                  </a>
+                )}
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

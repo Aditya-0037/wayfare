@@ -1,9 +1,11 @@
+import { Compass } from "@phosphor-icons/react";
+
 export default function Footer() {
   return (
-    <footer className="border-t border-edge/5 py-10">
+    <footer className="border-t border-edge/10 py-10">
       <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 text-sm text-wisp sm:flex-row">
         <div className="flex items-center gap-2">
-          <span>🧭</span>
+          <Compass weight="duotone" className="h-4 w-4 text-signal" />
           <span>Wayfare — agent discovery over ENS, payment over x402, receipts on HCS.</span>
         </div>
         <div className="flex items-center gap-5">

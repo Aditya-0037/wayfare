@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { ArrowRight, Stack, MagnifyingGlass, Receipt } from "@phosphor-icons/react";
 import FloatingOrbs from "./FloatingOrbs";
 import CompassRig from "./CompassRig";
 
@@ -13,7 +14,7 @@ function scrollTo(id: string) {
 
 export default function Hero() {
   return (
-    <section id="top" className="relative border-b border-edge/5">
+    <section id="top" className="relative border-b border-edge/10">
       <FloatingOrbs />
 
       <div className="relative mx-auto grid max-w-7xl grid-cols-1 gap-12 px-6 pb-20 pt-16 lg:grid-cols-[1.1fr_0.9fr] lg:pb-28 lg:pt-24">
@@ -57,7 +58,10 @@ export default function Hero() {
               onClick={() => scrollTo("console")}
               className="group relative overflow-hidden rounded-full bg-signal px-7 py-3.5 text-sm font-semibold text-onaccent shadow-glow transition hover:brightness-110 active:scale-95"
             >
-              <span className="relative z-10">Run a live task →</span>
+              <span className="relative z-10 inline-flex items-center gap-2">
+                Run a live task
+                <ArrowRight weight="bold" className="h-4 w-4 transition group-hover:translate-x-1" />
+              </span>
             </button>
             <button
               onClick={() => scrollTo("how")}
@@ -75,15 +79,24 @@ export default function Hero() {
             className="mt-14 grid max-w-lg grid-cols-3 gap-6 border-t border-edge/10 pt-8"
           >
             <div>
-              <dt className="text-xs uppercase tracking-wide text-wisp">Providers</dt>
+              <dt className="flex items-center gap-1.5 text-xs uppercase tracking-wide text-wisp">
+                <Stack weight="bold" className="h-3.5 w-3.5" />
+                Providers
+              </dt>
               <dd className="mt-1 font-display text-lg font-semibold text-fg sm:text-2xl">3 live</dd>
             </div>
             <div>
-              <dt className="text-xs uppercase tracking-wide text-wisp">Discovery</dt>
+              <dt className="flex items-center gap-1.5 text-xs uppercase tracking-wide text-wisp">
+                <MagnifyingGlass weight="bold" className="h-3.5 w-3.5" />
+                Discovery
+              </dt>
               <dd className="mt-1 font-display text-lg font-semibold text-fg sm:text-2xl">ENS, real-time</dd>
             </div>
             <div>
-              <dt className="text-xs uppercase tracking-wide text-wisp">Receipts</dt>
+              <dt className="flex items-center gap-1.5 text-xs uppercase tracking-wide text-wisp">
+                <Receipt weight="bold" className="h-3.5 w-3.5" />
+                Receipts
+              </dt>
               <dd className="mt-1 font-display text-lg font-semibold text-fg sm:text-2xl">Anchored to HCS</dd>
             </div>
           </motion.dl>

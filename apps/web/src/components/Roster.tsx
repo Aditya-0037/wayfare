@@ -1,3 +1,4 @@
+import { CheckCircle } from "@phosphor-icons/react";
 import { formatHbar, shortAddr } from "../lib/format";
 import type { ProviderState } from "../lib/types";
 
@@ -14,7 +15,7 @@ const statusLabel: Record<ProviderState["status"], string> = {
   quoted: "quoted",
   declined: "declined",
   chosen: "chosen",
-  paid: "paid ✓",
+  paid: "paid",
 };
 
 export default function Roster({ providers, chosen }: { providers: ProviderState[]; chosen: string | null }) {
@@ -31,7 +32,8 @@ export default function Roster({ providers, chosen }: { providers: ProviderState
         >
           <div className="flex items-center justify-between gap-2">
             <span className="font-mono text-sm text-fg">{p.name}</span>
-            <span className={`rounded-full border px-2 py-0.5 text-[11px] uppercase tracking-wide ${statusStyle[p.status]}`}>
+            <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] uppercase tracking-wide ${statusStyle[p.status]}`}>
+              {p.status === "paid" && <CheckCircle weight="fill" className="h-3 w-3" />}
               {statusLabel[p.status]}
             </span>
           </div>

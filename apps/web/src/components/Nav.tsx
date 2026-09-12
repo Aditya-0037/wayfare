@@ -1,3 +1,4 @@
+import { Compass, GithubLogo } from "@phosphor-icons/react";
 import ThemeToggle from "./ThemeToggle";
 
 function scrollTo(id: string) {
@@ -9,7 +10,7 @@ export default function Nav() {
     <header className="sticky top-0 z-50 border-b border-edge/10 bg-ink/70 backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         <button onClick={() => scrollTo("top")} className="flex items-center gap-2 font-display text-lg font-semibold tracking-tight">
-          <span className="text-xl">🧭</span>
+          <Compass weight="duotone" className="h-6 w-6 text-signal" />
           Wayfare
         </button>
         <nav className="hidden items-center gap-8 text-sm text-haze md:flex">
@@ -20,8 +21,9 @@ export default function Nav() {
             href="https://github.com/Aditya-0037/wayfare"
             target="_blank"
             rel="noreferrer"
-            className="transition hover:text-fg"
+            className="flex items-center gap-1.5 transition hover:text-fg"
           >
+            <GithubLogo weight="fill" className="h-4 w-4" />
             Docs
           </a>
         </nav>

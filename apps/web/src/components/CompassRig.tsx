@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Compass } from "@phosphor-icons/react";
 
 // A playful isometric "compass rig" — three orbiting rings around a paid-call core,
 // standing in for the agent choosing between providers. Pure CSS 3D, no model assets.
@@ -66,7 +67,7 @@ export default function CompassRig() {
         animate={{ rotateY: [0, 12, 0, -12, 0], rotateX: [0, -6, 0, 6, 0] }}
         transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
       >
-        <span className="text-4xl">🧭</span>
+        <Compass weight="duotone" className="h-11 w-11 text-signal" />
       </motion.div>
     </div>
   );

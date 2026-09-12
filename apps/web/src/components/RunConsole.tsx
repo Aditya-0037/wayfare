@@ -9,6 +9,7 @@ import AchievementToast from "./AchievementToast";
 import Confetti, { makeParticles, type ConfettiParticle } from "./Confetti";
 import { sfx, type SfxKey } from "../lib/sfx";
 import type { AgentEvent } from "../lib/types";
+import { SpeakerHigh, SpeakerSlash } from "@phosphor-icons/react";
 
 const SUCCESS_EMOJI = ["✅", "💸", "🧾", "✨"];
 
@@ -118,9 +119,9 @@ export default function RunConsole() {
             <button
               onClick={() => setMuted((m) => !m)}
               title={muted ? "Unmute sound effects" : "Mute sound effects"}
-              className="rounded-full border border-edge/10 bg-panel/60 px-3 py-1.5 text-xs text-haze transition hover:border-signal/30 hover:text-fg"
+              className="flex items-center rounded-full border border-edge/10 bg-panel/60 px-3 py-1.5 text-xs text-haze transition hover:border-signal/30 hover:text-fg"
             >
-              {muted ? "🔇" : "🔊"}
+              {muted ? <SpeakerSlash weight="bold" className="h-3.5 w-3.5" /> : <SpeakerHigh weight="bold" className="h-3.5 w-3.5" />}
             </button>
             <div className="flex items-center gap-2 rounded-full border border-edge/10 bg-panel/60 px-3 py-1.5 text-xs text-haze">
               <span className={`h-1.5 w-1.5 rounded-full ${connCopy[connection].dot}`} />

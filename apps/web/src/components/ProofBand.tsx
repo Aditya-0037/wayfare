@@ -1,27 +1,32 @@
+import { Money, Broadcast, IdentificationCard, ArrowRight } from "@phosphor-icons/react";
+
 const proofs = [
   {
     label: "First settled payment",
     detail: "Blocky402 facilitator, Hedera testnet",
     href: "https://hashscan.io/testnet/transaction/0.0.7162784-1788608829-232641440",
     cta: "View on HashScan",
+    icon: Money,
   },
   {
     label: "HCS receipt topic",
     detail: "Every settled call anchored — provider, quote id, amount, tx id, result hash",
     href: "https://testnet.mirrornode.hedera.com/api/v1/topics/0.0.10403773/messages",
     cta: "View on Mirror Node",
+    icon: Broadcast,
   },
   {
     label: "ENS identity",
     detail: "wayfare.eth + provider subnames, real ENSv2 (beta) on Sepolia",
     href: "https://discuss.ens.domains/t/ensip-26-ens-native-ai-identity/21968",
     cta: "ENSIP-26 spec",
+    icon: IdentificationCard,
   },
 ];
 
 export default function ProofBand() {
   return (
-    <section id="proof" className="relative border-b border-edge/5 bg-surface/60 py-20">
+    <section id="proof" className="relative border-b border-edge/10 bg-surface/60 py-20">
       <div className="mx-auto max-w-7xl px-6">
         <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
           <div>
@@ -40,12 +45,15 @@ export default function ProofBand() {
               className="group flex flex-col justify-between rounded-2xl border border-edge/10 bg-panel/50 p-6 transition hover:border-signal/30 hover:bg-panel"
             >
               <div>
-                <h3 className="font-display text-lg font-semibold">{p.label}</h3>
+                <div className="flex items-center gap-2.5">
+                  <p.icon weight="duotone" className="h-5 w-5 shrink-0 text-signal" />
+                  <h3 className="font-display text-lg font-semibold">{p.label}</h3>
+                </div>
                 <p className="mt-2 text-sm leading-relaxed text-haze">{p.detail}</p>
               </div>
               <span className="mt-5 inline-flex items-center gap-1 text-sm font-medium text-signal">
                 {p.cta}
-                <span className="transition group-hover:translate-x-1">→</span>
+                <ArrowRight weight="bold" className="h-4 w-4 transition group-hover:translate-x-1" />
               </span>
             </a>
           ))}

@@ -44,7 +44,7 @@ export default function AchievementToast({ rawLog }: { rawLog: AgentEvent[] }) {
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             className="pointer-events-auto flex max-w-xs items-start gap-3 rounded-2xl border border-signal/30 bg-panel/95 p-4 shadow-glow backdrop-blur"
           >
-            <span className="text-2xl">{a.icon}</span>
+            <a.icon weight="duotone" className="h-7 w-7 shrink-0 text-signal" />
             <div>
               <div className="text-[10px] font-semibold uppercase tracking-wide text-signal">Achievement unlocked</div>
               <div className="mt-0.5 font-display text-sm font-semibold text-fg">{a.title}</div>
