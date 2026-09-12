@@ -1,5 +1,5 @@
 import { parseAbiItem } from "viem";
-import { contracts, ensParentName, publicClient } from "./chain.js";
+import { contracts, ensParentName, publicClient, publicClientPool } from "./chain.js";
 import { REGISTRY_ABI, ZERO_ADDRESS } from "./registry.js";
 import { resolveProvider, type AgentRecord } from "./resolve.js";
 
@@ -38,11 +38,12 @@ async function withRetry<T>(fn: () => Promise<T>, attempts = 3): Promise<T> {
  */
 export async function discoverProviders(): Promise<AgentRecord[]> {
   const client = publicClient();
+  const pool = publicClientPool();
   const parentLabel = ensParentName.replace(/\.eth$/, "");
 
-  const readSubregistry = () =>
+  const readSubregistryFrom = (rpcClient: ReturnType<typeof publicClient>) =>
     withRetry(() =>
-      client.readContract({
+      rpcClient.readContract({
         address: contracts.ensV2EthRegistry.address,
         abi: REGISTRY_ABI,
         functionName: "getSubregistry",
@@ -52,12 +53,15 @@ export async function discoverProviders(): Promise<AgentRecord[]> {
 
   // A real "not registered" parent and a flaky misread from the RPC pool's load balancer
   // look identical from here (a fast, successful, wrong zero address, not a thrown error) —
-  // a handful of spaced-out re-reads before this code believes it costs a couple of seconds
-  // at worst and turns an intermittent false negative into a non-event.
-  let subregistryAddress = await readSubregistry();
-  for (let i = 0; subregistryAddress === ZERO_ADDRESS && i < 4; i++) {
-    await new Promise((r) => setTimeout(r, 500 * (i + 1)));
-    subregistryAddress = await readSubregistry();
+  // and retrying the *same* URL can keep landing on the same bad backend node behind that
+  // load balancer. Rotating across independently-verified endpoints instead gives each
+  // attempt a real chance of a different, correct node before this code believes a zero
+  // address. Costs a couple of seconds at worst, turns a false "no providers found" into a
+  // non-event.
+  let subregistryAddress = ZERO_ADDRESS as Awaited<ReturnType<typeof readSubregistryFrom>>;
+  for (let i = 0; subregistryAddress === ZERO_ADDRESS && i < pool.length * 2; i++) {
+    if (i > 0) await new Promise((r) => setTimeout(r, 500 * i));
+    subregistryAddress = await readSubregistryFrom(pool[i % pool.length]);
   }
   if (subregistryAddress === ZERO_ADDRESS) return [];
 

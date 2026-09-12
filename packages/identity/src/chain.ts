@@ -55,6 +55,19 @@ export function publicClient() {
   return createPublicClient({ chain: sepoliaWithEnsV2, transport: http(rpcUrl) });
 }
 
+// Known-good independent Sepolia RPC endpoints, each verified directly against this
+// project's own contracts (not just "responds to eth_blockNumber"). The default free public
+// pool is a load balancer over many independent node operators — one of them can serve a
+// stale or wrong read while the others are fine, so retrying the *same* URL can keep hitting
+// the same bad node. Rotating across genuinely different providers instead gives each retry
+// an independent chance instead of a repeat of the same flake.
+const FALLBACK_RPC_URLS = ["https://ethereum-sepolia-rpc.publicnode.com", "https://sepolia.gateway.tenderly.co"];
+
+export function publicClientPool(): ReturnType<typeof publicClient>[] {
+  const urls = [rpcUrl, ...FALLBACK_RPC_URLS.filter((u) => u !== rpcUrl)];
+  return urls.map((url) => createPublicClient({ chain: sepoliaWithEnsV2, transport: http(url) }));
+}
+
 export function walletClientFor(account: ReturnType<typeof privateKeyToAccount>) {
   return createWalletClient({ chain: sepoliaWithEnsV2, transport: http(rpcUrl), account });
 }
