@@ -1,11 +1,34 @@
 # Wayfare
 
-An agent that discovers services it has never seen before, pays for them per call on
-Hedera testnet via x402, and leaves a receipt trail anyone can check independently.
+**An agent that discovers services it has never seen before, pays for them per call on
+Hedera testnet via x402, and leaves a receipt trail anyone can check independently.**
 
-![Wayfare's live console mid-run: Roster, Reasoning, and Ledger populated from a real settled payment](docs/screenshot-console.png)
+[![Live app](https://img.shields.io/badge/live-wayfare--web.onrender.com-7dffb3?style=flat-square)](https://wayfare-web.onrender.com)
+[![Hedera testnet](https://img.shields.io/badge/Hedera-testnet-125fbb?style=flat-square)](https://hashscan.io/testnet)
+[![ENSv2](https://img.shields.io/badge/ENS-v2%20beta%20%C2%B7%20Sepolia-5298ff?style=flat-square)](https://docs.ens.domains/ensv2/overview)
+[![x402](https://img.shields.io/badge/payments-x402-ffb37d?style=flat-square)](https://x402.gitbook.io/x402/)
 
-This README tracks what's actually built, not what's planned.
+This README tracks what's actually built, not what's planned. Every claim below links to
+something you can independently verify — a transaction on HashScan, a receipt on Mirror
+Node, or code you can read yourself.
+
+**[Try it live](https://wayfare-web.onrender.com)** — no signup, no API key, no wallet
+needed. Click "Run it yourself" and watch a real agent pay a real invoice.
+
+## Contents
+
+- [The problem](#the-problem)
+- [The solution](#the-solution)
+- [Screenshots](#screenshots)
+- [Architecture](#architecture)
+- [A real run, end to end](#a-real-run-end-to-end)
+- [Status](#status)
+- [Layout](#layout)
+- [Payment stack](#payment-stack)
+- [ENS layer](#ens-layer)
+- [Running it locally](#running-it-locally)
+- [Deployment](#deployment)
+- [Future impact](#future-impact)
 
 ## The problem
 
@@ -15,6 +38,11 @@ in the codebase before the agent ever runs. That's not a market, it's a phone bo
 extra steps. And it quietly skips the actual hard problem: how does an agent find a
 service it's never seen before, decide whether it's worth paying, and prove afterward
 what it got and what it paid?
+
+That gap matters more every year. As more of the software making purchasing decisions is
+an LLM-driven agent rather than a human clicking "buy," the infrastructure for *finding*
+a seller and *proving* a transaction happened needs to be as real as the payment rail
+itself. Most demos skip straight to the payment and skip the market.
 
 ## The solution
 
@@ -31,10 +59,37 @@ all happen at runtime, not in config:
   can verify who got paid, how much, and for what.
 
 Discover → assess → decide → pay → consume → record. `apps/agent/src/runAgent.ts` is the
-whole loop in one file, and it emits a typed event at every step — the live console above
-is just rendering that stream, unmodified.
+whole loop in one file, and it emits a typed event at every step — the live console is
+just rendering that stream, unmodified.
+
+## Screenshots
+
+**Landing page** — the pitch and the three competing providers:
+
+![Wayfare landing page: hero, "shops the open market" pitch, and provider stat row](docs/screenshot-landing.png)
+
+**A real market, not a menu** — swift, deep, and niche, each genuinely different, not
+cosmetic variants of the same call:
+
+![Three provider cards: swift (cheap/shallow), deep (thorough/metered), niche (specialist/strict)](docs/screenshot-howitworks.png)
+
+**The agent stage, live** — three voxel NPCs that react to the actual WebSocket event
+stream (discovered → quoted → declined → chosen → paid), not a separate animation someone
+hand-tuned to look convincing:
+
+![Live agent stage: swift and deep with real quotes shown, deep highlighted as the chosen provider](docs/screenshot-agentstage.png)
 
 ## Architecture
+
+![Architecture diagram: agent discovers providers over ENS, quotes them, pays via x402 through Blocky402 to Hedera testnet, anchors a receipt to HCS, and streams every event to the live console](docs/architecture.png)
+
+The facilitator is the only party that ever touches gas: the agent signs a transfer
+authorizing its own payment, Blocky402 adds the network fee and submits it, and the
+provider never holds a private key at all — confirmed on Mirror Node for every
+settlement (see below).
+
+<details>
+<summary>Mermaid source (renders natively on GitHub too)</summary>
 
 ```mermaid
 flowchart TD
@@ -55,10 +110,27 @@ flowchart TD
     Agent == "WebSocket events" ==> Web["Live console — apps/web"]
 ```
 
-The facilitator is the only party that ever touches gas: the agent signs a transfer
-authorizing its own payment, Blocky402 adds the network fee and submits it, and the
-provider never holds a private key at all — confirmed on Mirror Node for every
-settlement (see Status below).
+</details>
+
+## A real run, end to end
+
+This is a genuine result from a live run, not a mockup — every link below resolves to a
+real, independently-checkable record.
+
+**The console, mid-result** — Roster, Reasoning, and Ledger, all populated from the same
+event stream, plus an achievement toast that only fires off a real settled payment:
+
+![Live console after a completed run: all three providers quoted, deep chosen and paid, reasoning trail and ledger populated, achievement toast visible](docs/screenshot-console.png)
+
+**The settlement, independently verified on HashScan** — not something you have to trust
+from this project's own word:
+
+![HashScan transaction page showing a successful CRYPTO TRANSFER on Hedera testnet](docs/screenshot-hashscan.png)
+
+**The receipt, independently verified on Hedera Mirror Node** — anchored to HCS topic
+`0.0.10403773`, sequence `#30`, pulled straight from Hedera's own public API:
+
+![Raw Mirror Node JSON showing the HCS receipt message for this settlement](docs/screenshot-mirrornode.png)
 
 ## Status
 
@@ -89,17 +161,6 @@ settlement (see Status below).
 - [~] M9 — submission. Demo script and all four sponsor writeups drafted (`docs/`); the
       actual video recording and the Bazantic Recipe above are the two things left, and
       both need a human at the keyboard, not more code.
-
-## Screenshots
-
-Landing page:
-
-![Wayfare landing page: hero, the three providers, the discover/quote/decide/pay steps, and the on-chain proof band](docs/screenshot-landing.png)
-
-The console screenshot at the top of this README is from a real run, captured live — not
-staged: `- Buy the flight before Tuesday` etc. went in, the agent discovered all three
-providers over ENS, quoted all three, picked `deep` (highest quality it could afford),
-paid it for real, and anchored an HCS receipt, all visible in that one screenshot.
 
 ## Layout
 
@@ -194,3 +255,29 @@ isolated from the account used for local development — and runs with tighter g
 than the local defaults (a cooldown between runs, a lifetime spend cap, a shorter max input
 length) specifically because it's reachable by anyone, not because the underlying agent
 logic changes. See `apps/agent/.env.example` for the exact knobs.
+
+## Future impact
+
+Wayfare's actual thesis is narrower than "agents can pay for things" — that part is
+solved. The open problem is *discovery*: an agent that has never seen a service before
+needs a way to find it, price it, and trust the record of what happened, without a human
+pre-wiring the relationship. A few directions this points toward:
+
+- **A real agent-to-agent marketplace.** Nothing about the discovery mechanism is
+  specific to text summarization — the same ENS-subname-as-service-registry pattern works
+  for any metered API. Swap the three providers for inference, data feeds, or compute, and
+  the discover → quote → decide → pay loop doesn't change.
+- **Reputation as a first-class, portable signal.** `wayfare.reputation` already lives on
+  the provider's own ENS name, not in a database Wayfare controls — any other agent, not
+  just this one, could read a provider's track record before ever calling it, and any
+  provider could carry that reputation to a different marketplace entirely.
+- **Multi-agent negotiation.** The current loop is one agent choosing among static quotes;
+  the natural next step is providers that adjust price in response to demand, or agents
+  that negotiate terms via A2A/ACP before a quote is even finalized.
+- **Composability with the wider x402 ecosystem.** Because settlement goes through a
+  standard facilitator (Blocky402) rather than a bespoke payment path, any x402-aware
+  agent — not just Wayfare's — could discover and pay these same providers today.
+
+The throughline: the more of the economy that ends up mediated by agents, the more the
+*market infrastructure* — discovery, pricing, proof — matters as much as the payment rail
+itself. That's the piece this project actually tried to build, not the payment.
