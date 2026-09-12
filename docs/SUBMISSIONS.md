@@ -45,7 +45,9 @@ word for it.
 - HCS-14 identity announcements: https://testnet.mirrornode.hedera.com/api/v1/topics/0.0.10404697/messages
 - Repo: https://github.com/Aditya-0037/wayfare
 
-**Demo video:** _link once recorded — script at `docs/DEMO_SCRIPT.md`_
+**Demo video:** 3:19 continuous recording of the real public deployment, covering the
+pitch, the live run, HashScan/Mirror Node proof, and the architecture — script at
+`docs/DEMO_SCRIPT.md`. Awaiting real narration; upload the narrated cut here once recorded.
 
 ---
 
@@ -87,7 +89,8 @@ and one EAC scope per agent.
 - Full transaction history and the live EAC read/write proof: `packages/identity/README.md`
 - Repo: https://github.com/Aditya-0037/wayfare
 
-**Demo video:** _link once recorded_
+**Demo video:** same 3:19 recording as above — lean on the "solution" and "architecture"
+beats (0:25-0:49 and 2:18-2:48) for the ENS-specific submission if a shorter cut is wanted.
 
 ---
 
@@ -115,15 +118,18 @@ live traffic; that needs `active` status, which in turn needs a payout account c
 on the dashboard (a real banking/KYC step, intentionally left to the account owner rather
 than automated). The Recipe combining a Wayfare gateway with an already-listed Bazantic
 service is not yet built — Bazantic's Recipes are dashboard-only with no API or CLI path.
+The full Recipe text, ready to paste, is drafted in `docs/BAZANTIC_RECIPE_DRAFT.md`.
 
 **Proof**
 
 - Gateway registrations: `SPONSORS.md` (slugs, endpoints, and the draft-status finding)
 - OpenAPI specs: `packages/discovery/openapi/`
+- Recipe draft, ready to submit: `docs/BAZANTIC_RECIPE_DRAFT.md`
 - Repo: https://github.com/Aditya-0037/wayfare
 
-**Demo video:** _once the Recipe exists, record it running in Bazantic's Playground —
-separate clip from the main Hedera/ENS demo_
+**Demo video:** _once the Recipe is pasted in, record it running in Bazantic's
+Playground — separate clip from the main Hedera/ENS demo, following the checklist at the
+bottom of `docs/BAZANTIC_RECIPE_DRAFT.md`_
 
 ---
 
