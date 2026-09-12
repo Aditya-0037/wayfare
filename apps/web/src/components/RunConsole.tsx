@@ -6,8 +6,11 @@ import Ledger from "./Ledger";
 import ResultPanel from "./ResultPanel";
 import AgentStage from "./AgentStage";
 import AchievementToast from "./AchievementToast";
+import Confetti, { makeParticles, type ConfettiParticle } from "./Confetti";
 import { sfx, type SfxKey } from "../lib/sfx";
 import type { AgentEvent } from "../lib/types";
+
+const SUCCESS_EMOJI = ["✅", "💸", "🧾", "✨"];
 
 const EVENT_SOUND: Partial<Record<AgentEvent["type"], SfxKey>> = {
   provider_discovered: "discover",
@@ -54,6 +57,27 @@ export default function RunConsole() {
   const busy = phase === "running";
   const providerList = Object.values(providers);
 
+  const [celebrating, setCelebrating] = useState(false);
+  const [celebrationParticles, setCelebrationParticles] = useState<ConfettiParticle[]>([]);
+  const [celebrationCaption, setCelebrationCaption] = useState("");
+  const lastCelebratedPhase = useRef<string | null>(null);
+  useEffect(() => {
+    // Only a genuine settled payment earns this — phase only reaches "success" after
+    // runAgent's PAY step actually completes, never on a refusal or a declined run.
+    if (phase === "success" && lastCelebratedPhase.current !== "success") {
+      const paidEntry = ledger.find((l) => l.kind === "payment");
+      // A run can succeed without ever paying (e.g. a genuinely free call) — celebrate the
+      // payment, not just "success", so this never claims a settlement that didn't happen.
+      if (paidEntry) {
+        setCelebrationCaption(`${paidEntry.label} — settled for real`);
+        setCelebrationParticles(makeParticles(SUCCESS_EMOJI, 18));
+        setCelebrating(true);
+        setTimeout(() => setCelebrating(false), 2600);
+      }
+    }
+    lastCelebratedPhase.current = phase;
+  }, [phase, ledger]);
+
   const seenEvents = useRef(0);
   useEffect(() => {
     if (muted) {
@@ -80,6 +104,7 @@ export default function RunConsole() {
   return (
     <section id="console" className="relative py-24">
       <AchievementToast rawLog={rawLog} />
+      <Confetti active={celebrating} particles={celebrationParticles} caption={celebrationCaption} />
       <div className="mx-auto max-w-7xl px-6">
         <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
           <div>

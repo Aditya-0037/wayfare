@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import Confetti, { makeParticles, type ConfettiParticle } from "./Confetti";
 
 const CODE = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a"];
 const EMOJI = ["🐢", "🚀", "🧭", "💰", "📜", "🛰️", "🪙"];
@@ -8,7 +8,7 @@ const EMOJI = ["🐢", "🚀", "🧭", "💰", "📜", "🛰️", "🪙"];
 // at the project's own pitch. Nothing here touches agent state, budgets, or the event log.
 export default function EasterEgg() {
   const [active, setActive] = useState(false);
-  const [particles, setParticles] = useState<{ id: number; emoji: string; x: number; delay: number }[]>([]);
+  const [particles, setParticles] = useState<ConfettiParticle[]>([]);
 
   useEffect(() => {
     let progress = 0;
@@ -22,46 +22,12 @@ export default function EasterEgg() {
     }
     function trigger() {
       setActive(true);
-      setParticles(
-        Array.from({ length: 28 }, (_, i) => ({
-          id: i,
-          emoji: EMOJI[i % EMOJI.length],
-          x: Math.random() * 100,
-          delay: Math.random() * 0.6,
-        })),
-      );
+      setParticles(makeParticles(EMOJI, 28));
       setTimeout(() => setActive(false), 3200);
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  return (
-    <AnimatePresence>
-      {active && (
-        <div className="pointer-events-none fixed inset-0 z-[60] overflow-hidden">
-          {particles.map((p) => (
-            <motion.span
-              key={p.id}
-              className="absolute top-[-40px] text-3xl"
-              style={{ left: `${p.x}%` }}
-              initial={{ y: -40, opacity: 0, rotate: 0 }}
-              animate={{ y: "110vh", opacity: [0, 1, 1, 0], rotate: 360 }}
-              transition={{ duration: 2.6, delay: p.delay, ease: "easeIn" }}
-            >
-              {p.emoji}
-            </motion.span>
-          ))}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            className="absolute bottom-10 left-1/2 -translate-x-1/2 rounded-full border border-signal/30 bg-ink/90 px-5 py-2.5 font-mono text-xs text-signal shadow-glow"
-          >
-            no cheat codes for the treasury — the agent still checks its own budget
-          </motion.div>
-        </div>
-      )}
-    </AnimatePresence>
-  );
+  return <Confetti active={active} particles={particles} caption="no cheat codes for the treasury — the agent still checks its own budget" />;
 }
