@@ -1,6 +1,7 @@
 import { parseAbiItem } from "viem";
-import { contracts, ensParentName, publicClient, publicClientPool } from "./chain.js";
+import { contracts, ensParentName, publicClientPool } from "./chain.js";
 import { REGISTRY_ABI, ZERO_ADDRESS } from "./registry.js";
+import { withRetry } from "./rpcRetry.js";
 import { resolveProvider, type AgentRecord } from "./resolve.js";
 
 const NAME_REGISTERED_EVENT = parseAbiItem(
@@ -11,37 +12,6 @@ const NAME_REGISTERED_EVENT = parseAbiItem(
 // is just a perf bound, not a hardcoded provider list: every *label* is still discovered from
 // on-chain event logs, not written into this codebase.
 const DISCOVERY_FROM_BLOCK = 11_652_400n;
-
-// The free, shared public Sepolia RPC pool occasionally serves a stale or otherwise-off
-// read under load — not as a thrown error, but as a "successful", fast, *wrong* answer.
-// Directly instrumented and caught twice: getSubregistry read back the zero address for a
-// name that's genuinely registered, and separately, getLogs read back zero events for a
-// range that genuinely has three. Both look identical to a real "nothing here" from the
-// caller's side, so `isSuspicious` names the shape of a too-good-to-be-true empty result and
-// this retries it — rotating across independently-verified endpoints, since retrying the
-// *same* URL can keep landing on the same bad backend node behind that pool's load balancer.
-async function withRetry<T>(
-  pool: ReturnType<typeof publicClientPool>,
-  fn: (client: ReturnType<typeof publicClient>) => Promise<T>,
-  isSuspicious: (result: T) => boolean = () => false,
-): Promise<T> {
-  let lastErr: unknown;
-  let result: T | undefined;
-  let haveResult = false;
-  const rounds = pool.length * 2;
-  for (let i = 0; i < rounds; i++) {
-    if (i > 0) await new Promise((r) => setTimeout(r, 500 * i));
-    try {
-      result = await fn(pool[i % pool.length]);
-      haveResult = true;
-      if (!isSuspicious(result)) return result;
-    } catch (err) {
-      lastErr = err;
-    }
-  }
-  if (haveResult) return result as T;
-  throw lastErr;
-}
 
 /**
  * Real on-chain discovery: read every NameRegistered event ever emitted by the parent's
