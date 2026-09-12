@@ -12,21 +12,34 @@ const NAME_REGISTERED_EVENT = parseAbiItem(
 // on-chain event logs, not written into this codebase.
 const DISCOVERY_FROM_BLOCK = 11_652_400n;
 
-// The free, shared public Sepolia RPC endpoint occasionally serves a stale or otherwise-off
-// read under load (observed directly: a real registered subregistry read back as the zero
-// address, resolving in ~250ms — too fast to be a real round trip — then correctly on the
-// very next attempt seconds later). One retry after a short pause is cheap and turns that
-// transient flake into a non-event instead of a false "no providers found".
-async function withRetry<T>(fn: () => Promise<T>, attempts = 3): Promise<T> {
+// The free, shared public Sepolia RPC pool occasionally serves a stale or otherwise-off
+// read under load — not as a thrown error, but as a "successful", fast, *wrong* answer.
+// Directly instrumented and caught twice: getSubregistry read back the zero address for a
+// name that's genuinely registered, and separately, getLogs read back zero events for a
+// range that genuinely has three. Both look identical to a real "nothing here" from the
+// caller's side, so `isSuspicious` names the shape of a too-good-to-be-true empty result and
+// this retries it — rotating across independently-verified endpoints, since retrying the
+// *same* URL can keep landing on the same bad backend node behind that pool's load balancer.
+async function withRetry<T>(
+  pool: ReturnType<typeof publicClientPool>,
+  fn: (client: ReturnType<typeof publicClient>) => Promise<T>,
+  isSuspicious: (result: T) => boolean = () => false,
+): Promise<T> {
   let lastErr: unknown;
-  for (let i = 0; i < attempts; i++) {
+  let result: T | undefined;
+  let haveResult = false;
+  const rounds = pool.length * 2;
+  for (let i = 0; i < rounds; i++) {
+    if (i > 0) await new Promise((r) => setTimeout(r, 500 * i));
     try {
-      return await fn();
+      result = await fn(pool[i % pool.length]);
+      haveResult = true;
+      if (!isSuspicious(result)) return result;
     } catch (err) {
       lastErr = err;
-      if (i < attempts - 1) await new Promise((r) => setTimeout(r, 400 * (i + 1)));
     }
   }
+  if (haveResult) return result as T;
   throw lastErr;
 }
 
@@ -37,41 +50,34 @@ async function withRetry<T>(fn: () => Promise<T>, attempts = 3): Promise<T> {
  * discover the exact same providers by running this against the same parent name.
  */
 export async function discoverProviders(): Promise<AgentRecord[]> {
-  const client = publicClient();
   const pool = publicClientPool();
   const parentLabel = ensParentName.replace(/\.eth$/, "");
 
-  const readSubregistryFrom = (rpcClient: ReturnType<typeof publicClient>) =>
-    withRetry(() =>
-      rpcClient.readContract({
+  const subregistryAddress = await withRetry(
+    pool,
+    (client) =>
+      client.readContract({
         address: contracts.ensV2EthRegistry.address,
         abi: REGISTRY_ABI,
         functionName: "getSubregistry",
         args: [parentLabel],
       }),
-    );
-
-  // A real "not registered" parent and a flaky misread from the RPC pool's load balancer
-  // look identical from here (a fast, successful, wrong zero address, not a thrown error) —
-  // and retrying the *same* URL can keep landing on the same bad backend node behind that
-  // load balancer. Rotating across independently-verified endpoints instead gives each
-  // attempt a real chance of a different, correct node before this code believes a zero
-  // address. Costs a couple of seconds at worst, turns a false "no providers found" into a
-  // non-event.
-  let subregistryAddress = ZERO_ADDRESS as Awaited<ReturnType<typeof readSubregistryFrom>>;
-  for (let i = 0; subregistryAddress === ZERO_ADDRESS && i < pool.length * 2; i++) {
-    if (i > 0) await new Promise((r) => setTimeout(r, 500 * i));
-    subregistryAddress = await readSubregistryFrom(pool[i % pool.length]);
-  }
+    (address) => address === ZERO_ADDRESS,
+  );
   if (subregistryAddress === ZERO_ADDRESS) return [];
 
-  const logs = await withRetry(() =>
-    client.getLogs({
-      address: subregistryAddress,
-      event: NAME_REGISTERED_EVENT,
-      fromBlock: DISCOVERY_FROM_BLOCK,
-      toBlock: "latest",
-    }),
+  const logs = await withRetry(
+    pool,
+    (client) =>
+      client.getLogs({
+        address: subregistryAddress,
+        event: NAME_REGISTERED_EVENT,
+        fromBlock: DISCOVERY_FROM_BLOCK,
+        toBlock: "latest",
+      }),
+    // Zero logs for a range that's genuinely non-empty is the same "successful but wrong"
+    // shape as the zero-address case above — reproduced directly, not assumed.
+    (result) => result.length === 0,
   );
 
   const labels = [...new Set(logs.map((log) => log.args.label).filter((label): label is string => Boolean(label)))];
